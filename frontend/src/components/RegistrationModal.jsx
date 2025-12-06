@@ -1,37 +1,73 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
+import ReCAPTCHA from 'react-google-recaptcha'
 import './RegistrationModal.css'
 
 const RegistrationModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({ name: '', email: '' })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const recaptchaRef = useRef(null)
+  
+  // Get reCAPTCHA site key from environment variables
+  // For Vite, use import.meta.env.VITE_RECAPTCHA_SITE_KEY
+  const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setErrorMessage('')
     setIsSubmitting(true)
     
+    // Get reCAPTCHA token only if reCAPTCHA is enabled
+    const captchaToken = recaptchaSiteKey ? recaptchaRef.current?.getValue() : null
+    
+    // Only require reCAPTCHA if site key is configured
+    if (recaptchaSiteKey && !captchaToken) {
+      setErrorMessage('Please complete the reCAPTCHA verification')
+      setIsSubmitting(false)
+      return
+    }
+    
+    // If no reCAPTCHA key is set, use a placeholder token
+    // Backend will skip verification if RECAPTCHA_SECRET is not set
+    const tokenToSend = captchaToken || 'dev-bypass-token'
+    
     try {
-      const response = await fetch('/api/registration/register', {
+      const response = await fetch('/api/preregister', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          captchaToken: tokenToSend,
+        }),
       })
 
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Registration failed')
+        // Handle error responses
+        const errorMsg = result.detail || result.message || 'Registration failed'
+        throw new Error(errorMsg)
       }
 
-      alert('Thank you for pre-registering! We\'ll be in touch soon.')
+      // Handle success or already registered
+      if (result.status === 'already_registered') {
+        alert(result.message || 'This email is already pre-registered!')
+      } else {
+        alert(result.message || 'Thank you for pre-registering! We\'ll be in touch soon.')
+      }
+      
+      // Reset form and close modal
       setFormData({ name: '', email: '' })
+      recaptchaRef.current?.reset()
       onClose()
     } catch (error) {
       console.error('Registration error:', error)
-      alert(error.message || 'Failed to register. Please try again.')
+      setErrorMessage(error.message || 'Failed to register. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -94,6 +130,33 @@ const RegistrationModal = ({ isOpen, onClose }) => {
                     required
                   />
                 </div>
+                
+                {recaptchaSiteKey ? (
+                  <div className="form-group">
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={recaptchaSiteKey}
+                      theme="light"
+                    />
+                  </div>
+                ) : (
+                  <div className="form-group" style={{ 
+                    padding: '0.75rem', 
+                    backgroundColor: '#fff3cd', 
+                    border: '1px solid #ffc107', 
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    color: '#856404'
+                  }}>
+                    ⚠️ Development mode: reCAPTCHA is disabled. Set VITE_RECAPTCHA_SITE_KEY to enable.
+                  </div>
+                )}
+                
+                {errorMessage && (
+                  <div className="form-error" style={{ color: '#ff4444', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                    {errorMessage}
+                  </div>
+                )}
                 
                 <motion.button
                   type="submit"
