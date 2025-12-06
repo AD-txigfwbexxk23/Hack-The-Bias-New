@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes } from 'react-icons/fa'
 import ReCAPTCHA from 'react-google-recaptcha'
+import { getApiUrl } from '../utils/api'
 import './RegistrationModal.css'
 
 const RegistrationModal = ({ isOpen, onClose }) => {
@@ -36,14 +37,18 @@ const RegistrationModal = ({ isOpen, onClose }) => {
     const tokenToSend = captchaToken || 'dev-bypass-token'
     
     try {
-      const response = await fetch('/api/preregister', {
+      // Trim whitespace from inputs
+      const trimmedName = formData.name.trim()
+      const trimmedEmail = formData.email.trim()
+      
+      const response = await fetch(getApiUrl('/preregister'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
+          name: trimmedName,
+          email: trimmedEmail,
           captchaToken: tokenToSend,
         }),
       })
@@ -51,8 +56,20 @@ const RegistrationModal = ({ isOpen, onClose }) => {
       const result = await response.json()
 
       if (!response.ok) {
-        // Handle error responses
-        const errorMsg = result.detail || result.message || 'Registration failed'
+        // Handle error responses - check for validation errors
+        let errorMsg = result.detail || result.message || 'Registration failed'
+        
+        // If it's a validation error (422), try to extract a more user-friendly message
+        if (response.status === 422 && result.detail) {
+          // Pydantic validation errors often have "detail" as a string or array
+          if (typeof result.detail === 'string') {
+            errorMsg = result.detail
+          } else if (Array.isArray(result.detail)) {
+            // Extract the first error message
+            errorMsg = result.detail[0]?.msg || 'Invalid input. Please check your form data.'
+          }
+        }
+        
         throw new Error(errorMsg)
       }
 

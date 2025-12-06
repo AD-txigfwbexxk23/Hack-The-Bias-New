@@ -38,8 +38,22 @@ async def preregister(data: PreregisterRequest):
                 "status": "already_registered"
             }
     except Exception as e:
-        print("Database check error:", e)
-        raise HTTPException(status_code=500, detail="Error checking database")
+        error_msg = str(e)
+        print(f"Database check error: {error_msg}")
+        
+        # Provide more specific error messages
+        if "Name or service not known" in error_msg or "Errno -2" in error_msg:
+            raise HTTPException(
+                status_code=500, 
+                detail="Database connection failed. Please check SUPABASE_URL configuration."
+            )
+        elif "connection" in error_msg.lower() or "network" in error_msg.lower():
+            raise HTTPException(
+                status_code=500,
+                detail="Unable to connect to database. Please try again later."
+            )
+        else:
+            raise HTTPException(status_code=500, detail=f"Error checking database: {error_msg}")
 
     # 3. Insert new email into Supabase
     try:
@@ -48,8 +62,22 @@ async def preregister(data: PreregisterRequest):
             "email": data.email
         }).execute()
     except Exception as e:
-        print("Supabase insert error:", e)
-        raise HTTPException(status_code=500, detail="Error saving data")
+        error_msg = str(e)
+        print(f"Supabase insert error: {error_msg}")
+        
+        # Provide more specific error messages
+        if "Name or service not known" in error_msg or "Errno -2" in error_msg:
+            raise HTTPException(
+                status_code=500,
+                detail="Database connection failed. Please check SUPABASE_URL configuration."
+            )
+        elif "connection" in error_msg.lower() or "network" in error_msg.lower():
+            raise HTTPException(
+                status_code=500,
+                detail="Unable to connect to database. Please try again later."
+            )
+        else:
+            raise HTTPException(status_code=500, detail=f"Error saving data: {error_msg}")
 
     # 4. Send confirmation email for new registrations
     try:

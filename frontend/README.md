@@ -134,8 +134,10 @@ The design system uses CSS custom properties defined in `src/styles/index.css`. 
 2. **Set Environment Variables**:
    - In Vercel dashboard, go to Settings → Environment Variables
    - Add:
-     - `SUPABASE_URL` - Your Supabase project URL
-     - `SUPABASE_KEY` - Your Supabase service role key
+     - `VITE_API_URL` - Your backend API URL (e.g., `https://api.hackthebias.dev`)
+     - `VITE_RECAPTCHA_SITE_KEY` - Your reCAPTCHA site key (optional)
+     - `SUPABASE_URL` - Your Supabase project URL (for serverless functions)
+     - `SUPABASE_KEY` - Your Supabase service role key (for serverless functions)
 
 3. **Deploy**:
    - Vercel will automatically deploy on every push to `main`
@@ -153,6 +155,25 @@ The design system uses CSS custom properties defined in `src/styles/index.css`. 
 - **Full stack**: Railway, Render, Fly.io (for the Express server)
 
 ## 📝 Environment Setup
+
+### Frontend Environment Variables
+
+Create a `.env` file in the `frontend` directory (or set in your deployment platform):
+
+```env
+# Backend API URL (required for production)
+# In development, this is optional - Vite proxy will be used
+VITE_API_URL=https://your-backend-api-url.com
+
+# reCAPTCHA (optional)
+VITE_RECAPTCHA_SITE_KEY=your_recaptcha_site_key_here
+```
+
+**How it works:**
+- **Development**: If `VITE_API_URL` is not set, the frontend uses relative URLs (`/api/...`) which are proxied to `http://localhost:8000` by Vite
+- **Production**: Set `VITE_API_URL` to your deployed backend URL (e.g., `https://api.hackthebias.dev`)
+
+### Backend Setup
 
 See `SUPABASE_SETUP.md` for detailed Supabase configuration instructions.
 
