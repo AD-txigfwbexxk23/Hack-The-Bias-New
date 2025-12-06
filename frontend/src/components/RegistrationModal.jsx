@@ -14,6 +14,8 @@ const RegistrationModal = ({ isOpen, onClose }) => {
   // For Vite, use import.meta.env.VITE_RECAPTCHA_SITE_KEY
   const recaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''
 
+
+  
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrorMessage('')
