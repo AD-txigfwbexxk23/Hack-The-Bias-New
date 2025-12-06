@@ -1,6 +1,16 @@
 # Hack The Bias
 
-A modern, animated hackathon website built with React, Vite, and Framer Motion. This site showcases a professional, polished design with smooth animations and a focus on diversity and inclusion in technology.
+A modern, animated hackathon website built with **React**, **Vite**, and **Framer Motion**. This site showcases a professional, polished design with smooth animations and a focus on diversity and inclusion in technology.
+
+## 🚀 Tech Stack
+
+This is a **React application** (not pure HTML/JS/CSS) built with:
+- **React 18** - Modern UI framework
+- **Vite** - Fast build tool and dev server
+- **Framer Motion** - Animation library
+- **Express.js** - Backend API server
+- **Supabase** - Database and backend services
+- **React Icons** - Icon library
 
 ## Features
 
@@ -104,6 +114,47 @@ The design system uses CSS custom properties defined in `src/styles/index.css`. 
 - Firefox (latest)
 - Safari (latest)
 - Edge (latest)
+
+## 🚢 Deployment
+
+### Vercel Deployment
+
+**Yes, this can be deployed on Vercel!** The project is configured for Vercel deployment:
+
+1. **Frontend (React/Vite)**: Deploys automatically to Vercel
+2. **Backend API**: Uses Vercel serverless functions (see `api/registration/register.js`)
+
+#### Steps to Deploy:
+
+1. **Connect to Vercel**:
+   - Go to [vercel.com](https://vercel.com)
+   - Import your GitHub repository: `AD-txigfwbexxk23/Hack-The-Bias-New`
+   - Vercel will auto-detect Vite and configure it
+
+2. **Set Environment Variables**:
+   - In Vercel dashboard, go to Settings → Environment Variables
+   - Add:
+     - `SUPABASE_URL` - Your Supabase project URL
+     - `SUPABASE_KEY` - Your Supabase service role key
+
+3. **Deploy**:
+   - Vercel will automatically deploy on every push to `main`
+   - Or click "Deploy" in the dashboard
+
+#### Important Notes:
+
+- The Express server (`server/server.js`) is for local development
+- For production on Vercel, the API routes use serverless functions in the `api/` folder
+- Make sure you've created the `registrations` table in Supabase (see `supabase_migration.sql`)
+
+### Alternative Deployment Options:
+
+- **Frontend only**: Netlify, GitHub Pages, Cloudflare Pages
+- **Full stack**: Railway, Render, Fly.io (for the Express server)
+
+## 📝 Environment Setup
+
+See `SUPABASE_SETUP.md` for detailed Supabase configuration instructions.
 
 ## License
 
