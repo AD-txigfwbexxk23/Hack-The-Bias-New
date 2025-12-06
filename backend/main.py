@@ -12,6 +12,10 @@ from utils.supabase_client import supabase
 
 app = FastAPI()
 
+@app.get("/")
+async def health_check():
+    return {"status": "healthy", "message": "Hack the Bias API is running"}
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors and return user-friendly messages"""
