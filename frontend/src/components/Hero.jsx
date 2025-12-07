@@ -203,6 +203,17 @@ const Hero = ({ onRegisterClick }) => {
               </motion.span>
             </motion.button>
 
+            <motion.a
+              className="btn-secondary"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSfWuCeyao7sGjrkIpvOtLW2zxe7R3TVbx2v2X7XYk9ZlKv0qg/viewform?usp=dialog"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.02, y: -1, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+              whileTap={{ scale: 0.99 }}
+            >
+              Apply to Judge
+            </motion.a>
+
             <motion.button
               className="btn-secondary"
               onClick={handleLearnMoreClick}
