@@ -12,31 +12,15 @@ const Footer = ({ onRegisterClick }) => {
       { name: 'Prizes', href: '#prizes' },
       { name: 'FAQ', href: '#faq' },
     ],
-    resources: [
-      { name: 'Code of Conduct', href: '#conduct' },
-      { name: 'Sponsorship', href: '#sponsors' },
-      { name: 'Volunteer', href: '#volunteer' },
-      { name: 'Press Kit', href: '#press' },
-    ],
-    legal: [
-      { name: 'Privacy Policy', href: '#privacy' },
-      { name: 'Terms of Service', href: '#terms' },
-      { name: 'Cookies', href: '#cookies' },
-    ],
   }
 
   const socialLinks = [
-    { name: 'LinkedIn', icon: FaLinkedin, href: 'https://linkedin.com', color: '#0077B5' },
-    { name: 'Twitter', icon: FaTwitter, href: 'https://twitter.com', color: '#1DA1F2' },
-    { name: 'GitHub', icon: FaGithub, href: 'https://github.com', color: '#333' },
-    { name: 'Instagram', icon: FaInstagram, href: 'https://instagram.com', color: '#E4405F' },
-    { name: 'Facebook', icon: FaFacebook, href: 'https://facebook.com', color: '#1877F2' },
+    { name: 'LinkedIn', icon: FaLinkedin, href: 'https://www.linkedin.com/company/hack-the-bias/', color: '#0077B5' },
+    { name: 'Instagram', icon: FaInstagram, href: 'https://https://www.instagram.com/hackthebias.ucalgary/', color: '#E4405F' },
   ]
 
   const contactInfo = [
-    { icon: FaEnvelope, text: 'hello@hackthebias.org', href: 'mailto:hello@hackthebias.org' },
-    { icon: FaPhone, text: '+1 (555) 123-4567', href: 'tel:+15551234567' },
-    { icon: FaMapMarkerAlt, text: 'Tech Innovation Center, Tech City', href: '#' },
+    { icon: FaEnvelope, text: 'ucalgary.hackthebias@robogals.org', href: 'mailto:ucalgary.hackthebias@robogals.org' },
   ]
 
   const handleSmoothScroll = (e, href) => {
@@ -118,34 +102,6 @@ const Footer = ({ onRegisterClick }) => {
                       onClick={(e) => handleSmoothScroll(e, link.href)}
                       className="footer-link"
                     >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="links-column">
-              <h4 className="links-title">Resources</h4>
-              <ul className="links-list">
-                {links.resources.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      onClick={(e) => handleSmoothScroll(e, link.href)}
-                      className="footer-link"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="links-column">
-              <h4 className="links-title">Legal</h4>
-              <ul className="links-list">
-                {links.legal.map((link) => (
-                  <li key={link.name}>
-                    <a href={link.href} className="footer-link">
                       {link.name}
                     </a>
                   </li>

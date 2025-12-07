@@ -17,11 +17,11 @@ const FAQ = () => {
     },
     {
       question: 'Do I need a team to join?',
-      answer: 'Not at all! You can register solo and join a team at our team formation event at the beginning of the hackathon.',
+      answer: 'Not at all! You can register solo and join a team at our team formation event at the beginning of the hackathon. Note that teams must have at least 2 members.',
     },
     {
       question: 'Is Hack the Bias free?',
-      answer: 'Yes, participating in Hack the Bias is completely free. We\'ll even provide meals, swag, and some travel reimbursements for selected applicants.',
+      answer: 'Yes, participating in Hack the Bias is completely free. We\'ll even provide meals, swag, and fun!',
     },
     {
       question: 'What\'s the main theme of the hackathon?',
@@ -126,10 +126,7 @@ const FAQ = () => {
             whileHover={{ scale: 1.05, y: -2 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              const footer = document.querySelector('#contact')
-              if (footer) {
-                footer.scrollIntoView({ behavior: 'smooth' })
-              }
+              window.location.href = 'mailto:ucalgary.hackthebias@robogals.org'
             }}
           >
             Contact Us

@@ -9,12 +9,6 @@ const About = () => {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
 
-  const stats = [
-    { value: '500+', label: 'Participants Expected' },
-    { value: '$50K+', label: 'Total Prize Pool' },
-    { value: '40+', label: 'Projects Built' },
-    { value: '30+', label: 'Industry Mentors' },
-  ]
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -44,7 +38,7 @@ const About = () => {
       {/* Background Elements */}
       <div className="about-background">
         <BackgroundElements sectionRef={ref} />
-        <VectorPattern vectors={['vector3']} size="small" opacity={0.1} />
+        <VectorPattern vectors={['vector3', 'vector01']} size="small" opacity={0.1} />
       </div>
 
       <div className="about-container">
@@ -220,28 +214,7 @@ const About = () => {
         </motion.div>
 
         {/* Stats */}
-        <motion.div
-          className="stats-section"
-          initial={{ opacity: 0, y: 15 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <div className="stats-grid">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                className="stat-item"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                transition={{ duration: 0.3, delay: 0.25 + index * 0.05 }}
-                whileHover={{ scale: 1.1, y: -8 }}
-              >
-                <div className="stat-value">{stat.value}</div>
-                <div className="stat-label">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+
       </div>
     </section>
   )

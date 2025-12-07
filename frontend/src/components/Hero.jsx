@@ -1,44 +1,68 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useInView } from 'framer-motion'
-import { FaArrowDown, FaRocket, FaUsers, FaTrophy } from 'react-icons/fa'
+import { FaArrowDown } from 'react-icons/fa'
 import { VectorPattern } from './VectorPattern'
 import './Hero.css'
 
 const Hero = ({ onRegisterClick }) => {
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false })
-
-  const stats = [
-    { icon: FaUsers, value: '500+', label: 'Participants' },
-    { icon: FaTrophy, value: '$50K+', label: 'In Prizes' },
-    { icon: FaRocket, value: '48h', label: 'To Build' },
-  ]
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false, hackathonStarted: false })
 
   useEffect(() => {
-    // Set target date to be 58 days, 20 hours, 21 minutes, 2 seconds from now
-    const now = new Date()
-    const targetDate = new Date(now.getTime())
-    targetDate.setDate(targetDate.getDate() + 58)
-    targetDate.setHours(targetDate.getHours() + 20)
-    targetDate.setMinutes(targetDate.getMinutes() + 21)
-    targetDate.setSeconds(targetDate.getSeconds() + 2)
+    // Hackathon start date: 9 PM January 16th, 2026
+    const hackathonStartDate = new Date('2026-01-16T21:00:00')
+    
+    // Calculate next Sunday at 9 AM (after hackathon starts)
+    const getNextSunday9AM = () => {
+      const now = new Date()
+      const nextSunday = new Date(now)
+      // Get current day of week (0 = Sunday, 6 = Saturday)
+      const dayOfWeek = now.getDay()
+      const currentHour = now.getHours()
+      const currentMinutes = now.getMinutes()
+      
+      // If it's Sunday and before 9 AM, target today at 9 AM
+      // Otherwise, calculate days until next Sunday
+      let daysUntilSunday
+      if (dayOfWeek === 0 && (currentHour < 9 || (currentHour === 9 && currentMinutes === 0))) {
+        daysUntilSunday = 0
+      } else {
+        daysUntilSunday = dayOfWeek === 0 ? 7 : 7 - dayOfWeek
+      }
+      
+      nextSunday.setDate(now.getDate() + daysUntilSunday)
+      nextSunday.setHours(9, 0, 0, 0)
+      return nextSunday
+    }
 
     const updateCountdown = () => {
       const currentTime = new Date().getTime()
-      const difference = targetDate.getTime() - currentTime
+      const hackathonStartTime = hackathonStartDate.getTime()
+      
+      // Check if hackathon has started
+      if (currentTime >= hackathonStartTime) {
+        // Hackathon has started - countdown to Sunday 9 AM
+        const sundayTarget = getNextSunday9AM()
+        const difference = sundayTarget.getTime() - currentTime
 
-      if (difference <= 0) {
-        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: true })
-        return
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+
+        setCountdown({ days, hours, minutes, seconds, expired: false, hackathonStarted: true })
+      } else {
+        // Hackathon hasn't started yet - countdown to hackathon start
+        const difference = hackathonStartTime - currentTime
+
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+
+        setCountdown({ days, hours, minutes, seconds, expired: false, hackathonStarted: false })
       }
-
-      const days = Math.floor(difference / (1000 * 60 * 60 * 24))
-      const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-      const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
-      const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-      setCountdown({ days, hours, minutes, seconds, expired: false })
     }
 
     // Update immediately
@@ -103,7 +127,7 @@ const Hero = ({ onRegisterClick }) => {
     <section id="home" className="hero" ref={sectionRef}>
       {/* Background Container - Ready for imported SVG assets */}
       <div className="hero-background">
-        <VectorPattern vectors={['vector01']} size="small" opacity={0.12} />
+        <VectorPattern vectors={['vector01', 'vector03']} size="small" opacity={0.12} />
       </div>
 
       {/* Main Content */}
@@ -120,7 +144,7 @@ const Hero = ({ onRegisterClick }) => {
             variants={itemVariants}
           >
             <span className="badge-pulse"></span>
-            <span className="badge-text">Join us for an incredible 48-hour journey</span>
+            <span className="badge-text">Join us for an incredible 36-hour journey</span>
           </motion.div>
 
           {/* Main Title */}
@@ -138,8 +162,15 @@ const Hero = ({ onRegisterClick }) => {
 
           {/* Countdown Timer */}
           <div className="hero-countdown">
-            {countdown.expired ? (
-              'The hackathon has begun!'
+            {countdown.hackathonStarted ? (
+              <>
+                <div style={{ marginBottom: '0.5rem', fontSize: '0.9em', opacity: 0.9 }}>
+                  Countdown to 9 AM on Sunday
+                </div>
+                <div>
+                  {String(countdown.days).padStart(2, '0')}d • {String(countdown.hours).padStart(2, '0')}h • {String(countdown.minutes).padStart(2, '0')}m • {String(countdown.seconds).padStart(2, '0')}s
+                </div>
+              </>
             ) : (
               `${String(countdown.days).padStart(2, '0')}d • ${String(countdown.hours).padStart(2, '0')}h • ${String(countdown.minutes).padStart(2, '0')}m • ${String(countdown.seconds).padStart(2, '0')}s`
             )}
@@ -181,34 +212,6 @@ const Hero = ({ onRegisterClick }) => {
             >
               Learn More
             </motion.button>
-          </motion.div>
-
-          {/* Stats */}
-          <motion.div
-            className="hero-stats"
-            variants={itemVariants}
-          >
-            {stats.map((stat, index) => {
-              const Icon = stat.icon
-              return (
-                <motion.div
-                  key={stat.label}
-                  className="stat-card"
-              initial={{ opacity: 0, scale: 0.98, y: 4 }}
-              animate={isInView ? { opacity: 1, scale: 1, y: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.8 + index * 0.08, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={{ scale: 1.03, y: -3 }}
-                >
-                  <div className="stat-icon">
-                    <Icon />
-                  </div>
-                  <div className="stat-content">
-                    <div className="stat-value">{stat.value}</div>
-                    <div className="stat-label">{stat.label}</div>
-                  </div>
-                </motion.div>
-              )
-            })}
           </motion.div>
         </div>
       </motion.div>

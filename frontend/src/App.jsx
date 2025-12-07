@@ -3,6 +3,7 @@ import Navigation from './components/Navigation'
 import Hero from './components/Hero'
 import About from './components/About'
 import Sponsors from './components/Sponsors'
+import Prizes from './components/Prizes'
 import FAQ from './components/FAQ'
 import Footer from './components/Footer'
 import RegistrationModal from './components/RegistrationModal'
@@ -24,6 +25,7 @@ function App() {
       <Navigation scrollY={scrollY} onRegisterClick={() => setIsModalOpen(true)} />
       <Hero onRegisterClick={() => setIsModalOpen(true)} />
       <About />
+      <Prizes />
       <Sponsors />
       <FAQ />
       <Footer onRegisterClick={() => setIsModalOpen(true)} />
