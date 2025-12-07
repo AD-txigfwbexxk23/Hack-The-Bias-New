@@ -17,6 +17,7 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
     { name: 'Prizes', href: '#prizes' },
     { name: 'Sponsors', href: '#sponsors' },
     { name: 'FAQ', href: '#faq' },
+    { name: 'Robogals', href: 'https://robogalsucalgary.com', external: true },
   ]
 
   const handleSmoothScroll = (e, href) => {
@@ -62,13 +63,24 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1, duration: 0.5 }}
             >
-              <a
-                href={item.href}
-                onClick={(e) => handleSmoothScroll(e, item.href)}
-                className="nav-link"
-              >
-                {item.name}
-              </a>
+              {item.external ? (
+                <a
+                  href={item.href}
+                  className="nav-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {item.name}
+                </a>
+              ) : (
+                <a
+                  href={item.href}
+                  onClick={(e) => handleSmoothScroll(e, item.href)}
+                  className="nav-link"
+                >
+                  {item.name}
+                </a>
+              )}
             </motion.li>
           ))}
         </ul>
@@ -108,17 +120,32 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
             transition={{ duration: 0.3 }}
           >
             {navItems.map((item, index) => (
-              <motion.a
-                key={item.name}
-                href={item.href}
-                onClick={(e) => handleSmoothScroll(e, item.href)}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="mobile-nav-link"
-              >
-                {item.name}
-              </motion.a>
+              item.external ? (
+                <motion.a
+                  key={item.name}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="mobile-nav-link"
+                >
+                  {item.name}
+                </motion.a>
+              ) : (
+                <motion.a
+                  key={item.name}
+                  href={item.href}
+                  onClick={(e) => handleSmoothScroll(e, item.href)}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="mobile-nav-link"
+                >
+                  {item.name}
+                </motion.a>
+              )
             ))}
             <motion.button
               className="mobile-register-btn"
@@ -137,4 +164,3 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
 }
 
 export default Navigation
-

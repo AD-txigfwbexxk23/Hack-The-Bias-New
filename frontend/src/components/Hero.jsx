@@ -200,7 +200,6 @@ const Hero = ({ onRegisterClick }) => {
                 animate={{ x: [0, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <FaArrowDown style={{ transform: 'rotate(-90deg)' }} />
               </motion.span>
             </motion.button>
 
