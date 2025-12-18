@@ -30,6 +30,14 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
     setError('')
     setIsSubmitting(true)
 
+    // Check for restricted email domains
+    const lowerEmail = email.toLowerCase()
+    if (lowerEmail.includes('ucalgary') || lowerEmail.includes('educbe')) {
+      setError('Please use a personal email address, not a school email.')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       let result
       if (mode === 'login') {
@@ -127,10 +135,11 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="Enter your personal email"
                     required
                     className="form-input"
                   />
+                  <p className="email-hint">Please use a personal email (e.g., Gmail, Outlook) rather than a school email.</p>
                 </div>
 
                 <div className="form-group">

@@ -62,8 +62,10 @@ export const AuthProvider = ({ children }) => {
 
   // Check registration status and return result (for use after auth)
   const checkRegistrationStatus = async () => {
-    if (session?.access_token) {
-      return await fetchRegistration(session.access_token)
+    // Get fresh session directly from Supabase (state might not be updated yet)
+    const { data: { session: currentSession } } = await supabase.auth.getSession()
+    if (currentSession?.access_token) {
+      return await fetchRegistration(currentSession.access_token)
     }
     return null
   }

@@ -14,8 +14,13 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
   const location = useLocation()
 
   useEffect(() => {
-    setIsScrolled(scrollY > 50)
-  }, [scrollY])
+    // Always show scrolled (blue) state on non-home pages
+    if (location.pathname !== '/') {
+      setIsScrolled(true)
+    } else {
+      setIsScrolled(scrollY > 50)
+    }
+  }, [scrollY, location.pathname])
 
   const navItems = [
     { name: 'Home', href: '#home' },

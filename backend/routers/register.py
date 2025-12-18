@@ -153,6 +153,40 @@ async def get_registration(current_user=Depends(get_current_user)):
         raise HTTPException(status_code=500, detail=f"Failed to fetch registration: {str(e)}")
 
 
+@router.patch("/registration")
+async def update_registration(
+    updates: dict,
+    current_user=Depends(get_current_user)
+):
+    """Update editable registration fields"""
+
+    # Only allow certain fields to be updated
+    allowed_fields = {
+        'dietary_restrictions',
+        'staying_overnight',
+        'interested_in_beginner',
+        'general_comments'
+    }
+
+    # Filter to only allowed fields
+    filtered_updates = {k: v for k, v in updates.items() if k in allowed_fields}
+
+    if not filtered_updates:
+        raise HTTPException(status_code=400, detail="No valid fields to update")
+
+    try:
+        result = supabase.table("registrations").update(filtered_updates).eq("user_id", current_user.id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Registration not found")
+
+        return {"message": "Registration updated successfully", "data": result.data[0]}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to update registration: {str(e)}")
+
+
 @router.get("/registration/status")
 async def get_registration_status(current_user=Depends(get_current_user)):
     """Check if user is registered"""

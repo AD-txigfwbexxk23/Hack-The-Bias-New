@@ -1,26 +1,68 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useAuth } from '../contexts/AuthContext'
-import { FaUser, FaGraduationCap, FaLightbulb, FaClipboardCheck, FaSignOutAlt, FaArrowLeft } from 'react-icons/fa'
+import { FaSignOutAlt, FaArrowLeft, FaCheck, FaEdit } from 'react-icons/fa'
 import './Dashboard.css'
 
 const Dashboard = () => {
-  const { user, registration, signOut } = useAuth()
+  const { registration, signOut, session, refreshRegistration } = useAuth()
   const navigate = useNavigate()
+  const [isEditing, setIsEditing] = useState(false)
+  const [editData, setEditData] = useState({})
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveMessage, setSaveMessage] = useState('')
 
   const handleSignOut = async () => {
     await signOut()
     navigate('/')
   }
 
-  const formatEducationLevel = (level, otherValue) => {
-    const map = {
-      'high_school': 'High School',
-      'post_secondary': 'Post-Secondary',
-      'recent_graduate': 'Recent Graduate',
-      'other': otherValue || 'Other'
+  const startEditing = () => {
+    setEditData({
+      dietary_restrictions: registration.dietary_restrictions || '',
+      staying_overnight: registration.staying_overnight,
+      interested_in_beginner: registration.interested_in_beginner,
+      general_comments: registration.general_comments || ''
+    })
+    setIsEditing(true)
+    setSaveMessage('')
+  }
+
+  const cancelEditing = () => {
+    setIsEditing(false)
+    setEditData({})
+    setSaveMessage('')
+  }
+
+  const saveChanges = async () => {
+    setIsSaving(true)
+    setSaveMessage('')
+
+    try {
+      const response = await fetch('/api/registration', {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editData)
+      })
+
+      if (response.ok) {
+        await refreshRegistration()
+        setIsEditing(false)
+        setSaveMessage('Changes saved successfully!')
+        setTimeout(() => setSaveMessage(''), 3000)
+      } else {
+        const data = await response.json()
+        setSaveMessage(data.detail || 'Failed to save changes')
+      }
+    } catch (error) {
+      setSaveMessage('Failed to save changes')
+    } finally {
+      setIsSaving(false)
     }
-    return map[level] || level
   }
 
   if (!registration) {
@@ -60,91 +102,110 @@ const Dashboard = () => {
           </button>
         </div>
 
-        <div className="dashboard-grid">
+        <div className="dashboard-simple">
           <motion.div
-            className="dashboard-card"
+            className="dashboard-card info-card"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="card-icon"><FaUser /></div>
-            <h3>Demographics</h3>
-            <ul>
-              <li><strong>Email:</strong> {registration.email}</li>
-              <li><strong>Education:</strong> {formatEducationLevel(registration.education_level, registration.education_level_other)}</li>
-              {registration.grade && <li><strong>Grade:</strong> {registration.grade}</li>}
-              {registration.year && <li><strong>Year:</strong> {registration.year}</li>}
-              <li><strong>Gender:</strong> {registration.gender_identity}</li>
-              <li><strong>Dietary:</strong> {registration.dietary_restrictions || 'None specified'}</li>
-            </ul>
-          </motion.div>
-
-          <motion.div
-            className="dashboard-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="card-icon"><FaGraduationCap /></div>
-            <h3>Experience</h3>
-            <ul>
-              <li>
-                <strong>Hackathon Experience:</strong>{' '}
-                {registration.hackathon_experience ? 'Yes' : 'No (First timer!)'}
-              </li>
-              {registration.hackathon_count && (
-                <li><strong>Hackathons Attended:</strong> {registration.hackathon_count}</li>
+            <div className="card-header">
+              <h3>Your Information</h3>
+              {!isEditing ? (
+                <button className="edit-btn" onClick={startEditing}>
+                  <FaEdit /> Edit
+                </button>
+              ) : (
+                <div className="edit-actions">
+                  <button className="save-btn" onClick={saveChanges} disabled={isSaving}>
+                    <FaCheck /> {isSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button className="cancel-btn" onClick={cancelEditing} disabled={isSaving}>
+                    Cancel
+                  </button>
+                </div>
               )}
-              {registration.relevant_skills && (
-                <li><strong>Skills:</strong> {registration.relevant_skills}</li>
-              )}
-            </ul>
-          </motion.div>
-
-          <motion.div
-            className="dashboard-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <div className="card-icon"><FaLightbulb /></div>
-            <h3>Your Interest</h3>
-            <div className="card-section">
-              <strong>Why Hack the Bias:</strong>
-              <p className="card-text">{registration.why_interested}</p>
             </div>
-            <div className="card-section">
-              <strong>Creative Project:</strong>
-              <p className="card-text">{registration.creative_project}</p>
-            </div>
-          </motion.div>
 
-          <motion.div
-            className="dashboard-card"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <div className="card-icon"><FaClipboardCheck /></div>
-            <h3>Logistics</h3>
-            <ul>
-              <li>
-                <strong>Staying Overnight:</strong>{' '}
-                {registration.staying_overnight ? 'Yes' : 'No'}
-              </li>
-              <li>
-                <strong>Photo Release:</strong> Signed
-              </li>
-              {registration.is_minor && (
-                <li><strong>Guardian Form:</strong> Submitted</li>
-              )}
-            </ul>
-            {registration.general_comments && (
-              <div className="card-section">
-                <strong>Comments:</strong>
-                <p className="card-text">{registration.general_comments}</p>
+            {saveMessage && (
+              <div className={`save-message ${saveMessage.includes('success') ? 'success' : 'error'}`}>
+                {saveMessage}
               </div>
             )}
+
+            <div className="info-grid">
+              <div className="info-item">
+                <label>Name</label>
+                <span>{registration.full_name}</span>
+              </div>
+
+              <div className="info-item">
+                <label>Email</label>
+                <span>{registration.email}</span>
+              </div>
+
+              <div className="info-item">
+                <label>Dietary Restrictions</label>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={editData.dietary_restrictions}
+                    onChange={(e) => setEditData({ ...editData, dietary_restrictions: e.target.value })}
+                    placeholder="None"
+                    className="edit-input"
+                  />
+                ) : (
+                  <span>{registration.dietary_restrictions || 'None'}</span>
+                )}
+              </div>
+
+              <div className="info-item">
+                <label>Staying Overnight</label>
+                {isEditing ? (
+                  <select
+                    value={editData.staying_overnight ? 'yes' : 'no'}
+                    onChange={(e) => setEditData({ ...editData, staying_overnight: e.target.value === 'yes' })}
+                    className="edit-select"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                ) : (
+                  <span>{registration.staying_overnight ? 'Yes' : 'No'}</span>
+                )}
+              </div>
+
+              <div className="info-item">
+                <label>Interested in Beginner Track</label>
+                {isEditing ? (
+                  <select
+                    value={editData.interested_in_beginner ? 'yes' : 'no'}
+                    onChange={(e) => setEditData({ ...editData, interested_in_beginner: e.target.value === 'yes' })}
+                    className="edit-select"
+                  >
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                  </select>
+                ) : (
+                  <span>{registration.interested_in_beginner ? 'Yes' : 'No'}</span>
+                )}
+              </div>
+
+              <div className="info-item full-width">
+                <label>Comments / Accommodations</label>
+                {isEditing ? (
+                  <textarea
+                    value={editData.general_comments}
+                    onChange={(e) => setEditData({ ...editData, general_comments: e.target.value })}
+                    placeholder="Any additional information..."
+                    className="edit-textarea"
+                    rows={3}
+                  />
+                ) : (
+                  <span>{registration.general_comments || 'None'}</span>
+                )}
+              </div>
+            </div>
           </motion.div>
         </div>
 
