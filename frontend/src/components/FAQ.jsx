@@ -38,7 +38,7 @@ const FAQ = () => {
       {/* Background Elements */}
       <div className="faq-background">
         <BackgroundElements sectionRef={ref} />
-        <VectorPattern vectors={['vector02']} size="small" opacity={0.1} />
+        <VectorPattern vectors={['vector02', 'vector01']} size="small" opacity={0.1} />
       </div>
 
       <div className="faq-container">

@@ -1,10 +1,14 @@
 import { useRef, useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, useInView } from 'framer-motion'
 import { FaArrowDown } from 'react-icons/fa'
 import { VectorPattern } from './VectorPattern'
+import { useAuth } from '../contexts/AuthContext'
 import './Hero.css'
 
 const Hero = ({ onRegisterClick }) => {
+  const { user, registration } = useAuth()
+  const navigate = useNavigate()
   const sectionRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px' })
   const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: false, hackathonStarted: false })
@@ -75,9 +79,19 @@ const Hero = ({ onRegisterClick }) => {
   }, [])
 
   const handleRegisterClick = () => {
-    if (onRegisterClick) {
+    if (user && registration) {
+      navigate('/dashboard')
+    } else if (onRegisterClick) {
       onRegisterClick()
     }
+  }
+
+  // Determine button text based on auth state
+  const getButtonText = () => {
+    if (user && registration) {
+      return 'Dashboard'
+    }
+    return 'Register Now'
   }
 
   const handleLearnMoreClick = () => {
@@ -195,7 +209,7 @@ const Hero = ({ onRegisterClick }) => {
               whileHover={{ scale: 1.02, y: -1, boxShadow: '0 12px 30px rgba(33, 150, 243, 0.3)' }}
               whileTap={{ scale: 0.99 }}
             >
-              <span>Pre Register</span>
+              <span>{getButtonText()}</span>
               <motion.span
                 animate={{ x: [0, 2, 0] }}
                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}

@@ -1,2 +1,2 @@
 # empty init file
-from . import root, preregister
+from . import root, register

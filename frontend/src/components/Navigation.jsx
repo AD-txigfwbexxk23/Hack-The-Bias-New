@@ -1,11 +1,17 @@
 import { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { FaUser, FaSignOutAlt } from 'react-icons/fa'
+import { useAuth } from '../contexts/AuthContext'
 import Vector3 from './Vector 3.svg'
 import './Navigation.css'
 
-const Navigation = ({ scrollY, onRegisterClick }) => {
+const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { user, registration, signOut } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     setIsScrolled(scrollY > 50)
@@ -22,19 +28,56 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
 
   const handleSmoothScroll = (e, href) => {
     e.preventDefault()
-    const element = document.querySelector(href)
-    if (element) {
-      const offset = 80
-      const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
-      const offsetPosition = elementPosition - offset
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      })
+    // If we're not on the homepage, navigate there first
+    if (location.pathname !== '/') {
+      navigate('/')
+      // Wait for navigation then scroll
+      setTimeout(() => {
+        const element = document.querySelector(href)
+        if (element) {
+          const offset = 80
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+          const offsetPosition = elementPosition - offset
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+        }
+      }, 100)
+    } else {
+      const element = document.querySelector(href)
+      if (element) {
+        const offset = 80
+        const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+        const offsetPosition = elementPosition - offset
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+      }
     }
     setIsMobileMenuOpen(false)
   }
+
+  const handleDashboardClick = () => {
+    navigate('/dashboard')
+    setIsMobileMenuOpen(false)
+  }
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/')
+    setIsMobileMenuOpen(false)
+  }
+
+  // Determine button text and action based on auth state
+  const getRegisterButtonConfig = () => {
+    if (user) {
+      if (registration) {
+        return { text: 'Dashboard', action: handleDashboardClick }
+      } else {
+        return { text: 'Complete Registration', action: onRegisterClick }
+      }
+    } else {
+      return { text: 'Register', action: onRegisterClick }
+    }
+  }
+
+  const buttonConfig = getRegisterButtonConfig()
 
   return (
     <motion.nav
@@ -85,17 +128,61 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
           ))}
         </ul>
 
-        <motion.button
-          className="nav-register-btn"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onRegisterClick}
-        >
-          Pre Register
-        </motion.button>
+        <div className="nav-auth-buttons">
+          {user ? (
+            <>
+              <motion.button
+                className="nav-register-btn"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={buttonConfig.action}
+              >
+                <FaUser style={{ marginRight: '0.5rem' }} />
+                {buttonConfig.text}
+              </motion.button>
+              <motion.button
+                className="nav-signout-btn"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.35, duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSignOut}
+              >
+                <FaSignOutAlt style={{ marginRight: '0.5rem' }} />
+                Sign Out
+              </motion.button>
+            </>
+          ) : (
+            <>
+              <motion.button
+                className="nav-login-btn"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.25, duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onLoginClick}
+              >
+                Login
+              </motion.button>
+              <motion.button
+                className="nav-register-btn"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onRegisterClick}
+              >
+                Register
+              </motion.button>
+            </>
+          )}
+        </div>
 
         <button
           className="mobile-menu-toggle"
@@ -147,15 +234,50 @@ const Navigation = ({ scrollY, onRegisterClick }) => {
                 </motion.a>
               )
             ))}
-            <motion.button
-              className="mobile-register-btn"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: navItems.length * 0.05 }}
-              onClick={onRegisterClick}
-            >
-              Pre Register
-            </motion.button>
+
+            {user ? (
+              <>
+                <motion.button
+                  className="mobile-dashboard-btn"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navItems.length * 0.05 }}
+                  onClick={buttonConfig.action}
+                >
+                  {buttonConfig.text}
+                </motion.button>
+                <motion.button
+                  className="mobile-signout-btn"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navItems.length * 0.05 + 0.05 }}
+                  onClick={handleSignOut}
+                >
+                  Sign Out
+                </motion.button>
+              </>
+            ) : (
+              <>
+                <motion.button
+                  className="mobile-login-btn"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navItems.length * 0.05 }}
+                  onClick={onLoginClick}
+                >
+                  Login
+                </motion.button>
+                <motion.button
+                  className="mobile-register-btn"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: navItems.length * 0.05 + 0.05 }}
+                  onClick={onRegisterClick}
+                >
+                  Register
+                </motion.button>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
