@@ -36,6 +36,7 @@ async def register(
     gender_identity: str = Form(...),
     grade: Optional[str] = Form(None),
     year: Optional[str] = Form(None),
+    major: Optional[str] = Form(None),
     dietary_restrictions: Optional[str] = Form(None),
     # Experience
     hackathon_experience: bool = Form(False),
@@ -50,10 +51,9 @@ async def register(
     general_comments: Optional[str] = Form(None),
     # Consent
     rules_consent: bool = Form(False),
-    photo_release_signature: str = Form(...),
     is_minor: bool = Form(False),
-    # File upload
-    guardian_form: Optional[UploadFile] = File(None),
+    # File upload - required for all participants
+    consent_form: UploadFile = File(...),
     # Auth
     current_user=Depends(get_current_user)
 ):
@@ -66,6 +66,7 @@ async def register(
             education_level_other=education_level_other,
             grade=grade,
             year=year,
+            major=major,
             gender_identity=gender_identity,
             dietary_restrictions=dietary_restrictions,
             hackathon_experience=hackathon_experience,
@@ -77,7 +78,6 @@ async def register(
             staying_overnight=staying_overnight,
             general_comments=general_comments,
             rules_consent=rules_consent,
-            photo_release_signature=photo_release_signature,
             is_minor=is_minor,
         )
     except ValueError as e:
@@ -98,15 +98,8 @@ async def register(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    # Handle guardian form upload if minor
-    guardian_form_url = None
-    if is_minor:
-        if not guardian_form:
-            raise HTTPException(
-                status_code=400,
-                detail="Guardian consent form is required for participants under 18"
-            )
-        guardian_form_url = await upload_guardian_form(guardian_form, user_id)
+    # Handle consent form upload (required for all participants)
+    consent_form_url = await upload_guardian_form(consent_form, user_id)
 
     # Generate unique hacker code
     hacker_code = generate_hacker_code()
@@ -121,6 +114,7 @@ async def register(
         "education_level_other": registration_data.education_level_other,
         "grade": registration_data.grade,
         "year": registration_data.year,
+        "major": registration_data.major,
         "gender_identity": registration_data.gender_identity,
         "dietary_restrictions": registration_data.dietary_restrictions,
         "hackathon_experience": registration_data.hackathon_experience,
@@ -132,9 +126,8 @@ async def register(
         "staying_overnight": registration_data.staying_overnight,
         "general_comments": registration_data.general_comments,
         "rules_consent": registration_data.rules_consent,
-        "photo_release_signature": registration_data.photo_release_signature,
         "is_minor": registration_data.is_minor,
-        "guardian_form_url": guardian_form_url,
+        "consent_form_url": consent_form_url,
     }
 
     try:

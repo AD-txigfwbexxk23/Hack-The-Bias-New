@@ -16,7 +16,8 @@ const DemographicsStep = ({ formData, updateFormData, errors }) => {
       education_level: e.target.value,
       education_level_other: '',
       grade: '',
-      year: ''
+      year: '',
+      major: ''
     })
   }
 
@@ -64,21 +65,53 @@ const DemographicsStep = ({ formData, updateFormData, errors }) => {
       )}
 
       {formData.education_level === 'post_secondary' && (
+        <>
+          <div className="form-group">
+            <label>
+              Year <span className="required">*</span>
+            </label>
+            <select
+              value={formData.year}
+              onChange={(e) => updateFormData({ year: e.target.value })}
+              className={`form-select ${errors.year ? 'error' : ''}`}
+            >
+              <option value="">Select your year</option>
+              {yearOptions.map(year => (
+                <option key={year} value={year}>{year} Year</option>
+              ))}
+            </select>
+            {errors.year && <span className="field-error">{errors.year}</span>}
+          </div>
+
+          <div className="form-group">
+            <label>
+              Major / Program <span className="required">*</span>
+            </label>
+            <input
+              type="text"
+              value={formData.major || ''}
+              onChange={(e) => updateFormData({ major: e.target.value })}
+              placeholder="e.g., Computer Science, Engineering, Business"
+              className={`form-input ${errors.major ? 'error' : ''}`}
+            />
+            {errors.major && <span className="field-error">{errors.major}</span>}
+          </div>
+        </>
+      )}
+
+      {formData.education_level === 'recent_graduate' && (
         <div className="form-group">
           <label>
-            Year <span className="required">*</span>
+            Major / Program <span className="required">*</span>
           </label>
-          <select
-            value={formData.year}
-            onChange={(e) => updateFormData({ year: e.target.value })}
-            className={`form-select ${errors.year ? 'error' : ''}`}
-          >
-            <option value="">Select your year</option>
-            {yearOptions.map(year => (
-              <option key={year} value={year}>{year} Year</option>
-            ))}
-          </select>
-          {errors.year && <span className="field-error">{errors.year}</span>}
+          <input
+            type="text"
+            value={formData.major || ''}
+            onChange={(e) => updateFormData({ major: e.target.value })}
+            placeholder="e.g., Computer Science, Engineering, Business"
+            className={`form-input ${errors.major ? 'error' : ''}`}
+          />
+          {errors.major && <span className="field-error">{errors.major}</span>}
         </div>
       )}
 

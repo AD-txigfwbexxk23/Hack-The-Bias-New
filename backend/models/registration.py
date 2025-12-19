@@ -16,6 +16,7 @@ class RegistrationRequest(BaseModel):
     education_level_other: Optional[str] = Field(None, max_length=200)  # For 'other' education level
     grade: Optional[str] = None  # For high school: 10, 11, 12
     year: Optional[str] = None   # For post-secondary: 1st, 2nd, 3rd, 4th, 5th+
+    major: Optional[str] = Field(None, max_length=200)  # For post-secondary and recent graduates
     gender_identity: str = Field(..., min_length=1, max_length=100)
     dietary_restrictions: Optional[str] = Field(None, max_length=200)
 
@@ -35,7 +36,6 @@ class RegistrationRequest(BaseModel):
 
     # Consent
     rules_consent: bool = False
-    photo_release_signature: str = Field(..., min_length=2, max_length=100)
     is_minor: bool = False
 
     @field_validator('creative_project')

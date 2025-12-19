@@ -1,0 +1,121 @@
+.rules-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f4fc 100%);
+  padding: calc(var(--space-2xl) + 60px) var(--space-lg) var(--space-2xl);
+}
+
+.rules-content {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #FFFFFF;
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  box-shadow: 0 4px 20px rgba(26, 58, 107, 0.08);
+}
+
+.rules-content h1 {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 800;
+  color: #153166;
+  margin-bottom: var(--space-xl);
+  text-align: center;
+}
+
+.rules-section {
+  margin-bottom: var(--space-xl);
+}
+
+.rules-section h2 {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #153166;
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 2px solid #f0f4f8;
+}
+
+.rules-section p {
+  color: #2A3558;
+  line-height: 1.7;
+  margin-bottom: var(--space-md);
+}
+
+.rules-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rules-section li {
+  color: #2A3558;
+  padding: var(--space-sm) 0;
+  padding-left: var(--space-lg);
+  position: relative;
+  line-height: 1.6;
+}
+
+.rules-section li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+
+.rules-section li strong {
+  color: #153166;
+}
+
+.rules-placeholder {
+  margin-top: var(--space-xl);
+  padding: var(--space-lg);
+  background: #fff8e6;
+  border-radius: var(--radius-md);
+  border-left: 4px solid #f59e0b;
+}
+
+.rules-placeholder p {
+  color: #92400e;
+  margin: 0;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: none;
+  border: none;
+  color: #153166;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-normal) ease;
+  margin-bottom: var(--space-lg);
+}
+
+.back-btn:hover {
+  background: rgba(21, 49, 102, 0.1);
+}
+
+@media (max-width: 768px) {
+  .rules-container {
+    padding: calc(var(--space-xl) + 70px) var(--space-sm) var(--space-xl);
+  }
+
+  .rules-content {
+    padding: var(--space-lg);
+  }
+
+  .rules-content h1 {
+    font-size: 1.35rem;
+  }
+
+  .rules-section h2 {
+    font-size: 1.1rem;
+  }
+}

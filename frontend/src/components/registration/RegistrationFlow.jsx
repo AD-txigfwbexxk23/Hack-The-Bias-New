@@ -27,6 +27,7 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
     education_level_other: '',
     grade: '',
     year: '',
+    major: '',
     gender_identity: '',
     dietary_restrictions: '',
     // Experience
@@ -42,9 +43,8 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
     general_comments: '',
     // Consent
     rules_consent: false,
-    photo_release_signature: '',
     is_minor: false,
-    guardian_form_file: null,
+    consent_form_file: null,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -69,6 +69,9 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
         }
         if (formData.education_level === 'post_secondary' && !formData.year) {
           errors.year = 'Please select your year'
+        }
+        if ((formData.education_level === 'post_secondary' || formData.education_level === 'recent_graduate') && !formData.major?.trim()) {
+          errors.major = 'Please enter your major or program'
         }
         if (formData.education_level === 'other' && !formData.education_level_other?.trim()) {
           errors.education_level_other = 'Please specify your education level'
@@ -97,9 +100,10 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
 
       case 4: // Consent
         if (!formData.rules_consent) errors.rules_consent = 'You must agree to the rules'
-        if (!formData.photo_release_signature.trim()) errors.photo_release_signature = 'Please provide your signature'
-        if (formData.is_minor && !formData.guardian_form_file) {
-          errors.guardian_form_file = 'Guardian consent form is required for participants under 18'
+        if (!formData.consent_form_file) {
+          errors.consent_form_file = formData.is_minor
+            ? 'Please upload the signed guardian consent and photo release form'
+            : 'Please upload the signed photo release form'
         }
         break
     }
@@ -141,7 +145,6 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
       submitData.append('why_interested', formData.why_interested)
       submitData.append('creative_project', formData.creative_project)
       submitData.append('rules_consent', formData.rules_consent)
-      submitData.append('photo_release_signature', formData.photo_release_signature)
       submitData.append('hackathon_experience', formData.hackathon_experience)
       submitData.append('interested_in_beginner', formData.interested_in_beginner)
       submitData.append('staying_overnight', formData.staying_overnight)
@@ -150,14 +153,15 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
       // Optional fields
       if (formData.grade) submitData.append('grade', formData.grade)
       if (formData.year) submitData.append('year', formData.year)
+      if (formData.major) submitData.append('major', formData.major)
       if (formData.dietary_restrictions) submitData.append('dietary_restrictions', formData.dietary_restrictions)
       if (formData.hackathon_count) submitData.append('hackathon_count', formData.hackathon_count)
       if (formData.relevant_skills) submitData.append('relevant_skills', formData.relevant_skills)
       if (formData.general_comments) submitData.append('general_comments', formData.general_comments)
 
-      // File upload
-      if (formData.guardian_form_file) {
-        submitData.append('guardian_form', formData.guardian_form_file)
+      // File upload - consent form is required for everyone
+      if (formData.consent_form_file) {
+        submitData.append('consent_form', formData.consent_form_file)
       }
 
       const response = await fetch('/api/register', {

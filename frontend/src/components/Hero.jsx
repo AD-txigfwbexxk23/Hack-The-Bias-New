@@ -236,6 +236,17 @@ const Hero = ({ onRegisterClick }) => {
             >
               Learn More
             </motion.button>
+
+            <motion.a
+              className="btn-secondary"
+              href="https://www.notion.so/Hack-the-Bias-Pre-Event-Packet-2ae21d407f5080c19d42d200fed62d47"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.02, y: -1, backgroundColor: 'rgba(255, 255, 255, 0.15)' }}
+              whileTap={{ scale: 0.99 }}
+            >
+              Event Guide
+            </motion.a>
           </motion.div>
         </div>
       </motion.div>

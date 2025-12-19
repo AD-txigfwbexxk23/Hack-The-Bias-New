@@ -4,6 +4,7 @@ import Navigation from './components/Navigation'
 import HomePage from './pages/HomePage'
 import Dashboard from './pages/Dashboard'
 import AuthCallback from './pages/AuthCallback'
+import Rules from './pages/Rules'
 import AuthModal from './components/auth/AuthModal'
 import RegistrationFlow from './components/registration/RegistrationFlow'
 import { useAuth } from './contexts/AuthContext'
@@ -66,6 +67,7 @@ function App() {
         <Route path="/" element={<HomePage onRegisterClick={handleRegisterClick} />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/rules" element={<Rules />} />
       </Routes>
       <AuthModal
         isOpen={isAuthModalOpen}

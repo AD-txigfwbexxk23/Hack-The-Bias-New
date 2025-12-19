@@ -126,6 +126,27 @@
   color: #e53e3e;
 }
 
+.download-form-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  background: linear-gradient(135deg, #153166 0%, #1e4080 100%);
+  color: #FFFFFF;
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  margin-bottom: var(--space-md);
+  transition: all var(--duration-normal) ease;
+  box-shadow: 0 2px 8px rgba(21, 49, 102, 0.2);
+}
+
+.download-form-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(21, 49, 102, 0.3);
+}
+
 .file-upload-area {
   border: 2px dashed #B7C4FC;
   border-radius: var(--radius-md);
