@@ -13,7 +13,7 @@ const Prizes = () => {
     {
       rank: '1st',
       title: '1st Place',
-      amount: 'Amount TBD',
+      amount: '$900',
       icon: FaTrophy,
       color: '#FFD700',
       gradient: 'linear-gradient(135deg, #FFD700, #FFA500)',
@@ -21,7 +21,7 @@ const Prizes = () => {
     {
       rank: '2nd',
       title: '2nd Place',
-      amount: 'Amount TBD',
+      amount: '$550',
       icon: FaMedal,
       color: '#C0C0C0',
       gradient: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)',
@@ -29,7 +29,7 @@ const Prizes = () => {
     {
       rank: '3rd',
       title: '3rd Place',
-      amount: 'Amount TBD',
+      amount: '$350',
       icon: FaAward,
       color: '#CD7F32',
       gradient: 'linear-gradient(135deg, #CD7F32, #8B6914)',
@@ -40,7 +40,7 @@ const Prizes = () => {
     {
       rank: '1st',
       title: '1st Place',
-      amount: 'Amount TBD',
+      amount: '$700',
       icon: FaTrophy,
       color: '#FFD700',
       gradient: 'linear-gradient(135deg, #FFD700, #FFA500)',
@@ -48,16 +48,24 @@ const Prizes = () => {
     {
       rank: '2nd',
       title: '2nd Place',
-      amount: 'Amount TBD',
+      amount: '$400',
       icon: FaMedal,
       color: '#C0C0C0',
       gradient: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)',
+    },
+    {
+      rank: '3rd',
+      title: '3rd Place',
+      amount: '$250',
+      icon: FaAward,
+      color: '#CD7F32',
+      gradient: 'linear-gradient(135deg, #CD7F32, #8B6914)',
     },
   ]
 
   const sidePrize = {
     title: 'KPMG Challenge',
-    amount: 'Amount TBD',
+    amount: '$400',
     icon: FaGift,
     color: '#00338D',
   }

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../contexts/AuthContext'
 import { FaSignOutAlt, FaArrowLeft, FaCheck, FaEdit } from 'react-icons/fa'
 import './Dashboard.css'
@@ -101,6 +102,31 @@ const Dashboard = () => {
             <FaSignOutAlt /> Sign Out
           </button>
         </div>
+
+        {registration.hacker_code && (
+          <div className="hacker-code-section">
+            <motion.div
+              className="hacker-code-card"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="qr-code-container">
+                <QRCodeSVG
+                  value={registration.hacker_code}
+                  size={120}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <div className="hacker-code-info">
+                <h3>Your Hacker Code</h3>
+                <div className="hacker-code-display">{registration.hacker_code}</div>
+                <p>Present this code at check-in</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
 
         <div className="dashboard-simple">
           <motion.div
@@ -212,9 +238,15 @@ const Dashboard = () => {
         <div className="dashboard-info">
           <h3>What's Next?</h3>
           <ul>
-            <li>Teams will be formed on the Hack the Bias portal closer to the event date.</li>
-            <li>Check your email for updates and important announcements.</li>
-            <li>Remember to arrive between 8:00 AM - 12:00 PM on the event day.</li>
+            <li>You'll find out if you've been accepted to the beginner track closer to the event date.</li>
+            <li>Keep an eye on your email for updates and important announcements.</li>
+            <li>
+              Check out the <a
+                href="https://www.notion.so/Hack-the-Bias-Pre-Event-Packet-2ae21d407f5080c19d42d200fed62d47"
+                target="_blank"
+                rel="noopener noreferrer"
+              >event guide</a> for everything you need to know.
+            </li>
           </ul>
         </div>
 

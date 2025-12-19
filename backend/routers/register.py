@@ -1,9 +1,29 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
 from typing import Optional
+from pydantic import BaseModel
+import random
+import string
 from utils.supabase_client import supabase
 from utils.auth import get_current_user
 from utils.storage import upload_guardian_form
+from utils.email import send_google_signup_email
 from models.registration import RegistrationRequest, RegistrationResponse, EducationLevel
+
+
+class GoogleSignupEmailRequest(BaseModel):
+    email: str
+    name: str
+
+
+def generate_hacker_code(length=5):
+    """Generate a unique 5-character alphanumeric code"""
+    chars = string.ascii_uppercase + string.digits
+    while True:
+        code = ''.join(random.choices(chars, k=length))
+        # Check if code already exists
+        existing = supabase.table("registrations").select("id").eq("hacker_code", code).execute()
+        if not existing.data:
+            return code
 
 router = APIRouter()
 
@@ -88,11 +108,15 @@ async def register(
             )
         guardian_form_url = await upload_guardian_form(guardian_form, user_id)
 
+    # Generate unique hacker code
+    hacker_code = generate_hacker_code()
+
     # Prepare data for insertion
     db_data = {
         "user_id": user_id,
         "email": email,
         "full_name": full_name,
+        "hacker_code": hacker_code,
         "education_level": registration_data.education_level.value,
         "education_level_other": registration_data.education_level_other,
         "grade": registration_data.grade,
@@ -200,3 +224,24 @@ async def get_registration_status(current_user=Depends(get_current_user)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to check registration status: {str(e)}")
+
+
+@router.post("/send-google-signup-email")
+async def send_google_signup_welcome_email(
+    request: GoogleSignupEmailRequest,
+    current_user=Depends(get_current_user)
+):
+    """Send welcome email to users who signed up via Google OAuth"""
+
+    # Verify that the email matches the authenticated user
+    if request.email != current_user.email:
+        raise HTTPException(status_code=403, detail="Email mismatch")
+
+    try:
+        await send_google_signup_email(request.email, request.name)
+        return {"success": True, "message": "Welcome email sent"}
+    except Exception as e:
+        # Log the error but don't fail the signup process
+        import logging
+        logging.error(f"Failed to send Google signup email: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")

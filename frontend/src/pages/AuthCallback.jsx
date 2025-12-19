@@ -18,6 +18,39 @@ const AuthCallback = () => {
         }
 
         if (data.session) {
+          const user = data.session.user
+
+          // Check if this is a new user (created within the last 2 minutes)
+          const createdAt = new Date(user.created_at)
+          const now = new Date()
+          const timeDiffMs = now - createdAt
+          const isNewUser = timeDiffMs < 2 * 60 * 1000 // 2 minutes
+
+          // Check if user signed up via Google OAuth
+          const isGoogleAuth = user.app_metadata?.provider === 'google'
+
+          if (isNewUser && isGoogleAuth) {
+            // Send welcome email for new Google OAuth signups
+            const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0]
+
+            try {
+              await fetch('/api/send-google-signup-email', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${data.session.access_token}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  email: user.email,
+                  name: name
+                })
+              })
+            } catch (emailErr) {
+              // Don't block the flow if email fails
+              console.error('Failed to send welcome email:', emailErr)
+            }
+          }
+
           // Successfully authenticated, redirect to home
           // The AuthContext will pick up the session and show registration if needed
           navigate('/')

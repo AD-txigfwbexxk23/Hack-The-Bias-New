@@ -151,6 +151,30 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
+.mobile-nav-right {
+  display: none;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.mobile-login-visible {
+  display: none;
+  padding: var(--space-xs) var(--space-md);
+  background: rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+}
+
+.mobile-login-visible:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #FFFFFF;
+}
+
 .mobile-menu-toggle {
   display: none;
   flex-direction: column;
@@ -295,6 +319,14 @@
 
   .nav-auth-buttons {
     display: none;
+  }
+
+  .mobile-nav-right {
+    display: flex;
+  }
+
+  .mobile-login-visible {
+    display: block;
   }
 
   .mobile-menu-toggle {

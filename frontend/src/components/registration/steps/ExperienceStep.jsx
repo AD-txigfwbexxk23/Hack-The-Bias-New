@@ -69,7 +69,7 @@ const ExperienceStep = ({ formData, updateFormData, errors }) => {
       <div className="form-group">
         <label>Would you be interested in a special beginners-only track?</label>
         <p className="step-description" style={{ marginBottom: 'var(--space-sm)' }}>
-          This track is designed for first-time hackers with fewer participants and a more supportive environment. Prizes are slightly smaller but the experience is tailored for beginners.
+          This track is designed for beginners with fewer participants and a more supportive environment. Prizes are slightly smaller but the experience is tailored for beginners.
         </p>
         <div className="radio-group">
           <label className="radio-option">

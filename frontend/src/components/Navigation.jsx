@@ -189,17 +189,27 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
           )}
         </div>
 
-        <button
-          className="mobile-menu-toggle"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle mobile menu"
-        >
-          <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
-            <span></span>
-            <span></span>
-            <span></span>
-          </span>
-        </button>
+        <div className="mobile-nav-right">
+          {!user && (
+            <button
+              className="mobile-login-visible"
+              onClick={onLoginClick}
+            >
+              Login
+            </button>
+          )}
+          <button
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle mobile menu"
+          >
+            <span className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+        </div>
       </div>
 
       <AnimatePresence>
