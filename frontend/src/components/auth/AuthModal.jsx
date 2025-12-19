@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FaTimes, FaGoogle } from 'react-icons/fa'
 import { useAuth } from '../../contexts/AuthContext'
+import { supabase } from '../../utils/supabase'
 import './AuthModal.css'
 
 const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
@@ -10,6 +11,7 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
   const [fullName, setFullName] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [showSignupSuccess, setShowSignupSuccess] = useState(false)
 
   const { signInWithEmail, signUpWithEmail, signInWithGoogle } = useAuth()
 
@@ -18,9 +20,14 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
     setPassword('')
     setFullName('')
     setError('')
+    setShowSignupSuccess(false)
   }
 
   const handleClose = () => {
+    // Only allow closing if not showing signup success (user must click continue)
+    if (showSignupSuccess) {
+      return // Prevent closing - user must acknowledge the spam message
+    }
     resetForm()
     onClose()
   }
@@ -42,22 +49,74 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
       let result
       if (mode === 'login') {
         result = await signInWithEmail(email, password)
+        if (result.error) {
+          setError(result.error.message)
+        } else {
+          resetForm()
+          onAuthSuccess()
+        }
       } else {
+        // SIGNUP: Create user through backend API (creates with email already verified)
         if (!fullName.trim()) {
           setError('Please enter your full name')
           setIsSubmitting(false)
           return
         }
-        result = await signUpWithEmail(email, password, fullName.trim())
-      }
 
-      if (result.error) {
-        setError(result.error.message)
-      } else {
-        resetForm()
-        onAuthSuccess()
+        // Step 1: Create verified user via backend
+        const createResponse = await fetch('/api/create-user-verified', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            full_name: fullName.trim()
+          })
+        })
+
+        const createResult = await createResponse.json()
+
+        if (!createResponse.ok) {
+          setError(createResult.detail || 'Failed to create account')
+          return
+        }
+
+        // Step 2: Sign in with the new credentials
+        result = await signInWithEmail(email, password)
+
+        if (result.error) {
+          setError(result.error.message)
+          return
+        }
+
+        // Step 3: Send welcome email (now we have a session)
+        try {
+          const { data: { session } } = await supabase.auth.getSession()
+          if (session?.access_token) {
+            await fetch('/api/send-google-signup-email', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${session.access_token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                email: email,
+                name: fullName
+              })
+            })
+          }
+        } catch (emailErr) {
+          // Don't block signup if email fails
+          console.error('Failed to send welcome email:', emailErr)
+        }
+
+        // Show success message with email check reminder (user must click to continue)
+        setShowSignupSuccess(true)
       }
     } catch (err) {
+      console.error('Auth error:', err)
       setError('An unexpected error occurred')
     } finally {
       setIsSubmitting(false)
@@ -78,6 +137,11 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
     onModeChange(newMode)
   }
 
+  const handleContinueAfterSignup = () => {
+    resetForm()
+    onAuthSuccess()
+  }
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -89,102 +153,131 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.3 }}
           >
-            <button className="modal-close" onClick={handleClose} aria-label="Close">
-              <FaTimes />
-            </button>
+            {!showSignupSuccess && (
+              <button className="modal-close" onClick={handleClose} aria-label="Close">
+                <FaTimes />
+              </button>
+            )}
 
             <div className="auth-modal-content">
-              <h2 className="auth-modal-title">
-                {mode === 'login' ? 'Welcome Back' : 'Join Hack the Bias'}
-              </h2>
-              <p className="auth-modal-subtitle">
-                {mode === 'login'
-                  ? 'Sign in to access your dashboard'
-                  : 'Create an account to register for the hackathon'}
-              </p>
-
-              <button className="google-auth-btn" onClick={handleGoogleAuth} type="button">
-                <FaGoogle />
-                <span>Continue with Google</span>
-              </button>
-
-              <div className="auth-divider">
-                <span>or</span>
-              </div>
-
-              <form onSubmit={handleEmailAuth} className="auth-form">
-                {mode === 'signup' && (
-                  <div className="form-group">
-                    <label htmlFor="fullName">Full Name</label>
-                    <input
-                      type="text"
-                      id="fullName"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Enter your full name"
-                      required={mode === 'signup'}
-                      className="form-input"
-                    />
+              {showSignupSuccess ? (
+                <div className="signup-success">
+                  <div className="signup-success-icon">✓</div>
+                  <h2 className="auth-modal-title">Account Created!</h2>
+                  <p className="auth-modal-subtitle">Welcome to Hack the Bias 2026</p>
+                  <div className="email-check-notice prominent">
+                    <div className="email-icon">📧</div>
+                    <h3>Important: Check Your Email!</h3>
+                    <p>We've sent you a welcome email with important information.</p>
+                    <div className="spam-warning">
+                      <strong>⚠️ Check your Spam/Junk folder!</strong>
+                      <p>If you find our email there, please mark it as "Not Spam" so you don't miss future updates.</p>
+                    </div>
                   </div>
-                )}
-
-                <div className="form-group">
-                  <label htmlFor="email">Email</label>
-                  <input
-                    type="email"
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your personal email"
-                    required
-                    className="form-input"
-                  />
-                  <p className="email-hint">Please use a personal email (e.g., Gmail, Outlook) rather than a school email.</p>
+                  <motion.button
+                    className="continue-btn"
+                    onClick={handleContinueAfterSignup}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    I understand, continue to registration
+                  </motion.button>
                 </div>
+              ) : (
+                <>
+                  <h2 className="auth-modal-title">
+                    {mode === 'login' ? 'Welcome Back' : 'Join Hack the Bias'}
+                  </h2>
+                  <p className="auth-modal-subtitle">
+                    {mode === 'login'
+                      ? 'Sign in to access your dashboard'
+                      : 'Create an account to register for the hackathon'}
+                  </p>
 
-                <div className="form-group">
-                  <label htmlFor="password">Password</label>
-                  <input
-                    type="password"
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    minLength={6}
-                    className="form-input"
-                  />
-                </div>
+                  <button className="google-auth-btn" onClick={handleGoogleAuth} type="button">
+                    <FaGoogle />
+                    <span>Continue with Google</span>
+                  </button>
 
-                {error && <div className="auth-error">{error}</div>}
+                  <div className="auth-divider">
+                    <span>or</span>
+                  </div>
 
-                <motion.button
-                  type="submit"
-                  className="auth-submit-btn"
-                  disabled={isSubmitting}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {isSubmitting
-                    ? 'Please wait...'
-                    : mode === 'login' ? 'Sign In' : 'Create Account'
-                  }
-                </motion.button>
-              </form>
+                  <form onSubmit={handleEmailAuth} className="auth-form">
+                    {mode === 'signup' && (
+                      <div className="form-group">
+                        <label htmlFor="fullName">Full Name</label>
+                        <input
+                          type="text"
+                          id="fullName"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          placeholder="Enter your full name"
+                          required={mode === 'signup'}
+                          className="form-input"
+                        />
+                      </div>
+                    )}
 
-              <p className="auth-switch">
-                {mode === 'login' ? (
-                  <>
-                    Don't have an account?{' '}
-                    <button type="button" onClick={() => handleModeSwitch('signup')}>Sign up</button>
-                  </>
-                ) : (
-                  <>
-                    Already have an account?{' '}
-                    <button type="button" onClick={() => handleModeSwitch('login')}>Sign in</button>
-                  </>
-                )}
-              </p>
+                    <div className="form-group">
+                      <label htmlFor="email">Email</label>
+                      <input
+                        type="email"
+                        id="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your personal email"
+                        required
+                        className="form-input"
+                      />
+                      <p className="email-hint">Please use a personal email (e.g., Gmail, Outlook) rather than a school email.</p>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="password">Password</label>
+                      <input
+                        type="password"
+                        id="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        required
+                        minLength={6}
+                        className="form-input"
+                      />
+                    </div>
+
+                    {error && <div className="auth-error">{error}</div>}
+
+                    <motion.button
+                      type="submit"
+                      className="auth-submit-btn"
+                      disabled={isSubmitting}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      {isSubmitting
+                        ? 'Please wait...'
+                        : mode === 'login' ? 'Sign In' : 'Create Account'
+                      }
+                    </motion.button>
+                  </form>
+
+                  <p className="auth-switch">
+                    {mode === 'login' ? (
+                      <>
+                        Don't have an account?{' '}
+                        <button type="button" onClick={() => handleModeSwitch('signup')}>Sign up</button>
+                      </>
+                    ) : (
+                      <>
+                        Already have an account?{' '}
+                        <button type="button" onClick={() => handleModeSwitch('login')}>Sign in</button>
+                      </>
+                    )}
+                  </p>
+                </>
+              )}
             </div>
           </motion.div>
         </div>

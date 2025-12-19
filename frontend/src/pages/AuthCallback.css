@@ -1,0 +1,184 @@
+.auth-callback-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #153166 0%, #1e4080 100%);
+  padding: 1rem;
+}
+
+.loading-content {
+  text-align: center;
+  color: #FFFFFF;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-content p {
+  font-size: 1.1rem;
+}
+
+/* Welcome Card */
+.welcome-card {
+  background: #FFFFFF;
+  border-radius: 1rem;
+  padding: 2.5rem;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.welcome-icon {
+  width: 80px;
+  height: 80px;
+  background: #48BB78;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  font-weight: bold;
+  margin: 0 auto 1.5rem;
+  animation: scaleIn 0.4s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.welcome-card h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #153166;
+  margin-bottom: 0.5rem;
+}
+
+.welcome-subtitle {
+  font-size: 1rem;
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+}
+
+/* Email Notice */
+.email-notice {
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFEFD5 100%);
+  border: 3px solid #F6AD55;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.email-notice .email-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+.email-notice h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #C05621;
+  margin-bottom: 0.75rem;
+}
+
+.email-notice > p {
+  color: #744210;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.spam-warning {
+  background: #FED7D7;
+  border: 2px solid #FC8181;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.spam-warning strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #C53030;
+  margin-bottom: 0.5rem;
+}
+
+.spam-warning p {
+  color: #822727;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Continue Button */
+.continue-btn {
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding: 1rem 2rem;
+  background: #153166;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(21, 49, 102, 0.2);
+  margin-top: 1.5rem;
+  width: 100%;
+}
+
+.continue-btn:hover {
+  background: #1e4080;
+  box-shadow: 0 6px 24px rgba(21, 49, 102, 0.3);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .welcome-card {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .welcome-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .welcome-card h1 {
+    font-size: 1.5rem;
+  }
+
+  .email-notice {
+    padding: 1rem;
+  }
+
+  .email-notice .email-icon {
+    font-size: 2.5rem;
+  }
+
+  .email-notice h2 {
+    font-size: 1.1rem;
+  }
+}

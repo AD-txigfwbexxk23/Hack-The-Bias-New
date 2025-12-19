@@ -90,6 +90,8 @@ const Hero = ({ onRegisterClick }) => {
   const getButtonText = () => {
     if (user && registration) {
       return 'Dashboard'
+    } else if (user && !registration) {
+      return 'Complete Registration'
     }
     return 'Register Now'
   }

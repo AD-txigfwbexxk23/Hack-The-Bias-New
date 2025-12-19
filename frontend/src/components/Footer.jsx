@@ -11,6 +11,7 @@ const Footer = ({ onRegisterClick }) => {
       { name: 'Schedule', href: '#schedule' },
       { name: 'Prizes', href: '#prizes' },
       { name: 'FAQ', href: '#faq' },
+      { name: 'Rules', href: '/rules' },
     ],
   }
 

@@ -228,6 +228,120 @@
   color: #1e4080;
 }
 
+/* Signup Success Message */
+.signup-success {
+  text-align: center;
+  padding: var(--space-lg) 0;
+}
+
+.signup-success-icon {
+  width: 70px;
+  height: 70px;
+  background: #48BB78;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0 auto var(--space-lg);
+  animation: scaleIn 0.4s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.signup-success .email-check-notice {
+  background: #EBF8FF;
+  border: 2px solid #90CDF4;
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin: var(--space-lg) 0;
+  text-align: left;
+}
+
+.signup-success .email-check-notice.prominent {
+  background: linear-gradient(135deg, #FFF7E6 0%, #FFEFD5 100%);
+  border: 3px solid #F6AD55;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.signup-success .email-check-notice .email-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-md);
+}
+
+.signup-success .email-check-notice h3 {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #C05621;
+  margin-bottom: var(--space-md);
+}
+
+.signup-success .email-check-notice p {
+  margin: var(--space-sm) 0;
+  color: #744210;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.signup-success .email-check-notice strong {
+  color: #153166;
+  font-weight: 700;
+}
+
+.signup-success .spam-warning {
+  background: #FED7D7;
+  border: 2px solid #FC8181;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-lg);
+  text-align: center;
+}
+
+.signup-success .spam-warning strong {
+  display: block;
+  font-size: 1rem;
+  color: #C53030;
+  margin-bottom: var(--space-xs);
+}
+
+.signup-success .spam-warning p {
+  color: #822727;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.signup-success .continue-btn {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: var(--space-md) var(--space-xl);
+  background: #153166;
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+  box-shadow: 0 4px 16px rgba(21, 49, 102, 0.2);
+  margin-top: var(--space-xl);
+  width: 100%;
+}
+
+.signup-success .continue-btn:hover {
+  background: #1e4080;
+  box-shadow: 0 6px 24px rgba(21, 49, 102, 0.3);
+}
+
 @media (max-width: 768px) {
   .auth-modal-container {
     padding: var(--space-xl);
@@ -240,5 +354,11 @@
 
   .auth-modal-subtitle {
     font-size: 0.9rem;
+  }
+
+  .signup-success-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
   }
 }

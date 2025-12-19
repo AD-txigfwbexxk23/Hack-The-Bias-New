@@ -1,9 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../utils/supabase'
+import './AuthCallback.css'
 
 const AuthCallback = () => {
   const navigate = useNavigate()
+  const [showWelcome, setShowWelcome] = useState(false)
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -49,11 +51,13 @@ const AuthCallback = () => {
               // Don't block the flow if email fails
               console.error('Failed to send welcome email:', emailErr)
             }
-          }
 
-          // Successfully authenticated, redirect to home
-          // The AuthContext will pick up the session and show registration if needed
-          navigate('/')
+            // Show welcome message with spam warning for new users
+            setShowWelcome(true)
+          } else {
+            // Existing user, redirect immediately
+            navigate('/')
+          }
         } else {
           navigate('/')
         }
@@ -66,31 +70,42 @@ const AuthCallback = () => {
     handleCallback()
   }, [navigate])
 
+  const handleContinue = () => {
+    // Redirect to home with flag to open registration modal
+    navigate('/?openRegistration=true')
+  }
+
+  if (showWelcome) {
+    return (
+      <div className="auth-callback-container">
+        <div className="welcome-card">
+          <div className="welcome-icon">✓</div>
+          <h1>Account Created!</h1>
+          <p className="welcome-subtitle">Welcome to Hack the Bias 2026</p>
+
+          <div className="email-notice">
+            <div className="email-icon">📧</div>
+            <h2>Important: Check Your Email!</h2>
+            <p>We've sent you a welcome email with important information.</p>
+            <div className="spam-warning">
+              <strong>⚠️ Check your Spam/Junk folder!</strong>
+              <p>If you find our email there, please mark it as "Not Spam" so you don't miss future updates.</p>
+            </div>
+          </div>
+
+          <button className="continue-btn" onClick={handleContinue}>
+            I understand, continue to registration
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #153166 0%, #1e4080 100%)',
-      color: '#FFFFFF'
-    }}>
-      <div style={{ textAlign: 'center' }}>
-        <div style={{
-          width: '48px',
-          height: '48px',
-          border: '4px solid rgba(255,255,255,0.3)',
-          borderTopColor: '#FFFFFF',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-          margin: '0 auto 1rem'
-        }} />
-        <p style={{ fontSize: '1.1rem' }}>Completing sign in...</p>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
+    <div className="auth-callback-container">
+      <div className="loading-content">
+        <div className="spinner" />
+        <p>Completing sign in...</p>
       </div>
     </div>
   )

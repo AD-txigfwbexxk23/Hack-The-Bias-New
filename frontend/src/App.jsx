@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import Navigation from './components/Navigation'
 import HomePage from './pages/HomePage'
 import Dashboard from './pages/Dashboard'
@@ -17,6 +17,7 @@ function App() {
 
   const { user, registration, checkRegistrationStatus } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +26,16 @@ function App() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // Check for openRegistration query parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    if (params.get('openRegistration') === 'true' && user && !registration) {
+      setIsRegistrationOpen(true)
+      // Clean up the URL
+      navigate('/', { replace: true })
+    }
+  }, [location.search, user, registration, navigate])
 
   const handleRegisterClick = () => {
     if (user) {

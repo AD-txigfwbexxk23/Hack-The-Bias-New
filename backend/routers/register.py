@@ -6,7 +6,7 @@ import string
 from utils.supabase_client import supabase
 from utils.auth import get_current_user
 from utils.storage import upload_guardian_form
-from utils.email import send_google_signup_email
+from utils.email import send_google_signup_email, send_registration_complete_email
 from models.registration import RegistrationRequest, RegistrationResponse, EducationLevel
 
 
@@ -237,4 +237,24 @@ async def send_google_signup_welcome_email(
         # Log the error but don't fail the signup process
         import logging
         logging.error(f"Failed to send Google signup email: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+
+
+@router.post("/send-registration-complete-email")
+async def send_registration_complete_welcome_email(
+    request: GoogleSignupEmailRequest,
+    current_user=Depends(get_current_user)
+):
+    """Send registration complete email after user finishes full registration"""
+
+    # Verify that the email matches the authenticated user
+    if request.email != current_user.email:
+        raise HTTPException(status_code=403, detail="Email mismatch")
+
+    try:
+        await send_registration_complete_email(request.email, request.name)
+        return {"success": True, "message": "Registration complete email sent"}
+    except Exception as e:
+        import logging
+        logging.error(f"Failed to send registration complete email: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")

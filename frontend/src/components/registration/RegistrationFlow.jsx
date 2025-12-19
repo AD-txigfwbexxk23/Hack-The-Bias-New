@@ -49,6 +49,7 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [stepErrors, setStepErrors] = useState({})
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
   const { session, refreshRegistration } = useAuth()
   const navigate = useNavigate()
@@ -190,9 +191,28 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
       // Refresh registration data in context
       await refreshRegistration()
 
-      // Close modal and navigate to dashboard
-      onClose()
-      navigate('/dashboard')
+      // Send registration complete email
+      try {
+        const userEmail = session.user?.email
+        const userName = session.user?.user_metadata?.full_name || session.user?.user_metadata?.name || userEmail?.split('@')[0]
+
+        await fetch('/api/send-registration-complete-email', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            email: userEmail,
+            name: userName
+          })
+        })
+      } catch (emailErr) {
+        console.error('Failed to send registration complete email:', emailErr)
+      }
+
+      // Show success message (user must click to continue)
+      setShowSuccessMessage(true)
     } catch (err) {
       setError(err.message || 'Failed to submit registration')
     } finally {
@@ -201,18 +221,35 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
   }
 
   const handleClose = () => {
+    // Only allow closing if not showing success message (user must click continue)
+    if (showSuccessMessage) {
+      return // Prevent closing - user must acknowledge the spam message
+    }
     setCurrentStep(0)
     setStepErrors({})
     setError('')
     onClose()
   }
 
+  const handleContinueToDashboard = () => {
+    setShowSuccessMessage(false)
+    setCurrentStep(0)
+    onClose()
+    navigate('/dashboard')
+  }
+
   const CurrentStepComponent = STEPS[currentStep].component
+
+  const handleOverlayClick = () => {
+    if (!showSuccessMessage) {
+      handleClose()
+    }
+  }
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="modal-overlay" onClick={handleClose}>
+        <div className="modal-overlay" onClick={handleOverlayClick}>
           <motion.div
             className="registration-modal-container"
             initial={{ opacity: 0, scale: 0.9 }}
@@ -221,64 +258,95 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
             transition={{ duration: 0.3 }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button className="modal-close" onClick={handleClose} aria-label="Close">
-              <FaTimes />
-            </button>
+            {!showSuccessMessage && (
+              <button className="modal-close" onClick={handleClose} aria-label="Close">
+                <FaTimes />
+              </button>
+            )}
 
             <div className="registration-modal-content">
-              <h2 className="registration-title">Complete Your Registration</h2>
-
-              <StepIndicator
-                steps={STEPS}
-                currentStep={currentStep}
-              />
-
-              <div className="step-content">
-                <CurrentStepComponent
-                  formData={formData}
-                  updateFormData={updateFormData}
-                  errors={stepErrors}
-                />
-              </div>
-
-              {error && <div className="registration-error">{error}</div>}
-
-              <div className="registration-nav">
-                {currentStep > 0 && (
+              {showSuccessMessage ? (
+                <div className="registration-success">
+                  <div className="success-icon">✓</div>
+                  <h2 className="success-title">Registration Complete!</h2>
+                  <p className="success-message">
+                    Thank you for registering for Hack the Bias 2026!
+                  </p>
+                  <div className="email-check-notice prominent">
+                    <div className="email-icon">📧</div>
+                    <h3>Important: Check Your Email!</h3>
+                    <p>We've sent you a confirmation email with important details about the hackathon.</p>
+                    <div className="spam-warning">
+                      <strong>⚠️ Check your Spam/Junk folder!</strong>
+                      <p>If you find our email there, please mark it as "Not Spam" so you don't miss future updates.</p>
+                    </div>
+                  </div>
                   <motion.button
-                    className="nav-btn prev-btn"
-                    onClick={prevStep}
+                    className="continue-btn"
+                    onClick={handleContinueToDashboard}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    type="button"
                   >
-                    Previous
+                    I understand, continue to dashboard
                   </motion.button>
-                )}
+                </div>
+              ) : (
+                <>
+                  <h2 className="registration-title">Complete Your Registration</h2>
 
-                {currentStep < STEPS.length - 1 ? (
-                  <motion.button
-                    className="nav-btn next-btn"
-                    onClick={nextStep}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="button"
-                  >
-                    Next
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    className="nav-btn submit-btn"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="button"
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Complete Registration'}
-                  </motion.button>
-                )}
-              </div>
+                  <StepIndicator
+                    steps={STEPS}
+                    currentStep={currentStep}
+                  />
+
+                  <div className="step-content">
+                    <CurrentStepComponent
+                      formData={formData}
+                      updateFormData={updateFormData}
+                      errors={stepErrors}
+                    />
+                  </div>
+
+                  {error && <div className="registration-error">{error}</div>}
+
+                  <div className="registration-nav">
+                    {currentStep > 0 && (
+                      <motion.button
+                        className="nav-btn prev-btn"
+                        onClick={prevStep}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="button"
+                      >
+                        Previous
+                      </motion.button>
+                    )}
+
+                    {currentStep < STEPS.length - 1 ? (
+                      <motion.button
+                        className="nav-btn next-btn"
+                        onClick={nextStep}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="button"
+                      >
+                        Next
+                      </motion.button>
+                    ) : (
+                      <motion.button
+                        className="nav-btn submit-btn"
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        type="button"
+                      >
+                        {isSubmitting ? 'Submitting...' : 'Complete Registration'}
+                      </motion.button>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         </div>
