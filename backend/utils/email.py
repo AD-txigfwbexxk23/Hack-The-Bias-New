@@ -17,6 +17,9 @@ async def send_prereg_email(to_email: str, name: str):
         logger.error("MAILTRAP_PASS is not set")
         raise ValueError("MAILTRAP_PASS required")
 
+    # Strip whitespace in case env var has extra spaces
+    token = token.strip()
+
     sender_email = os.getenv("MAIL_FROM", "info@hackthebias.dev")
 
     # Build unsubscribe URL (override with UNSUBSCRIBE_BASE env var if needed)
@@ -55,9 +58,17 @@ async def send_google_signup_email(to_email: str, name: str):
     Uses Mailtrap template API, same as prereg email.
     """
     token = os.getenv("MAILTRAP_PASS")
+    print(f"Mailtrap token (first 3 chars): {os.getenv('MAILTRAP_PASS', 'NOT_FOUND')[:3]}")
     if not token:
         logger.error("MAILTRAP_PASS is not set")
         raise ValueError("MAILTRAP_PASS required")
+
+    # Strip whitespace in case env var has extra spaces
+    token = token.strip()
+
+    # Debug logging (only shows first/last 4 chars for security)
+    token_preview = f"{token[:4]}...{token[-4:]}" if len(token) > 8 else "***"
+    logger.info(f"Using Mailtrap token: {token_preview} (length: {len(token)})")
 
     sender_email = os.getenv("MAIL_FROM", "info@hackthebias.dev")
 
@@ -99,6 +110,9 @@ async def send_registration_complete_email(to_email: str, name: str):
     if not token:
         logger.error("MAILTRAP_PASS is not set")
         raise ValueError("MAILTRAP_PASS required")
+
+    # Strip whitespace in case env var has extra spaces
+    token = token.strip()
 
     template_uuid = os.getenv("MAILTRAP_COMPLETE_REG_TEMPLATE_UUID")
     if not template_uuid:
