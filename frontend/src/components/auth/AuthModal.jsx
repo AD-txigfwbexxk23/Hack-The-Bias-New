@@ -5,6 +5,41 @@ import { useAuth } from '../../contexts/AuthContext'
 import { supabase } from '../../utils/supabase'
 import './AuthModal.css'
 
+// Validate email format - checks for valid structure and real email providers
+const isValidEmail = (email) => {
+  // Basic email regex pattern
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return { valid: false, reason: 'Please enter a valid email address' }
+  }
+
+  // Extract domain
+  const domain = email.split('@')[1].toLowerCase()
+
+  // Block localhost and local domains
+  if (domain === 'localhost' || domain.endsWith('.local') || domain.endsWith('.localhost')) {
+    return { valid: false, reason: 'Please use a real email address, not a local address' }
+  }
+
+  // Block IP addresses as domains
+  if (/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(domain)) {
+    return { valid: false, reason: 'Please use a real email address, not an IP address' }
+  }
+
+  // Block single-word domains (no TLD)
+  if (!domain.includes('.')) {
+    return { valid: false, reason: 'Please enter a complete email address with a valid domain' }
+  }
+
+  // Block very short TLDs (less than 2 chars) or suspicious patterns
+  const tld = domain.split('.').pop()
+  if (tld.length < 2) {
+    return { valid: false, reason: 'Please enter a valid email address' }
+  }
+
+  return { valid: true }
+}
+
 const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,6 +71,14 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
     e.preventDefault()
     setError('')
     setIsSubmitting(true)
+
+    // Validate email format
+    const emailValidation = isValidEmail(email)
+    if (!emailValidation.valid) {
+      setError(emailValidation.reason)
+      setIsSubmitting(false)
+      return
+    }
 
     // Check for restricted email domains
     const lowerEmail = email.toLowerCase()

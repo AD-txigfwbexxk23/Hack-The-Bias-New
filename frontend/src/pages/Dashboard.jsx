@@ -139,7 +139,7 @@ const Dashboard = () => {
         <div className="dashboard-content">
           <div className="dashboard-header">
             <h1>Complete Your Registration</h1>
-            <p>Please complete the registration form to view your dashboard.</p>
+            <p>Please complete the registration form or sign in to your existing account to view your dashboard.</p>
             <button className="back-btn" onClick={() => navigate('/')}>
               <FaArrowLeft /> Back to Home
             </button>
