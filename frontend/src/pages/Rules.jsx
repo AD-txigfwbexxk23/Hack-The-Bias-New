@@ -61,7 +61,7 @@ const Rules = () => {
             <li>All code must be written during the hackathon period.</li>
             <li>Pre-existing libraries, frameworks, and APIs are allowed.</li>
             <li>Projects must align with the hackathon theme of social justice, inclusion, and equity.</li>
-            <li>Teams must consist of <strong>2–4 participants</strong>.</li>
+            <li>Teams must consist of <strong>2–5 participants</strong>.</li>
             <li>Participants may only compete in <strong>one competition tier</strong> (Beginner or Regular).</li>
             <li>Misrepresenting experience level (e.g. falsely competing in the Beginner tier) may result in disqualification.</li>
           </ul>
