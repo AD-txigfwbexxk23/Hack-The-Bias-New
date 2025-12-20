@@ -168,10 +168,10 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
                   <div className="email-check-notice prominent">
                     <div className="email-icon">📧</div>
                     <h3>Important: Check Your Email!</h3>
-                    <p>We've sent you a welcome email with important information.</p>
+                    <p>We've sent you a welcome email with some information.</p>
                     <div className="spam-warning">
-                      <strong>⚠️ Check your Spam/Junk folder!</strong>
-                      <p>If you find our email there, please mark it as "Not Spam" so you don't miss future updates.</p>
+                      <strong>⚠️ Check your Promotions and Spam/Junk folder!</strong>
+                      <p>If you find our email there, please mark it as "Not Spam" or drag the email into your primary inbox so you don't miss future updates.</p>
                     </div>
                   </div>
                   <motion.button
