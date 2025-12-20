@@ -1,10 +1,14 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import { useAuth } from '../contexts/AuthContext'
-import { FaSignOutAlt, FaArrowLeft, FaCheck, FaEdit } from 'react-icons/fa'
+import { FaSignOutAlt, FaArrowLeft, FaCheck, FaEdit, FaDownload, FaExclamationTriangle } from 'react-icons/fa'
 import './Dashboard.css'
+
+// Consent form URLs
+const MINOR_FORM_URL = 'Photo and Video Release Form (Minors) (1).pdf'
+const ADULT_FORM_URL = 'Photo and Video Release Form Non-minors.pdf'
 
 const Dashboard = () => {
   const { registration, signOut, session, refreshRegistration } = useAuth()
@@ -13,6 +17,10 @@ const Dashboard = () => {
   const [editData, setEditData] = useState({})
   const [isSaving, setIsSaving] = useState(false)
   const [saveMessage, setSaveMessage] = useState('')
+  const [isUploadingConsent, setIsUploadingConsent] = useState(false)
+  const [consentUploadMessage, setConsentUploadMessage] = useState('')
+  const [selectedConsentFile, setSelectedConsentFile] = useState(null)
+  const consentFileInputRef = useRef(null)
 
   const handleSignOut = async () => {
     await signOut()
@@ -66,6 +74,65 @@ const Dashboard = () => {
     }
   }
 
+  const handleConsentFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png']
+      if (!allowedTypes.includes(file.type)) {
+        setConsentUploadMessage('Please upload a PDF, JPEG, or PNG file')
+        return
+      }
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        setConsentUploadMessage('File size must be under 5MB')
+        return
+      }
+      setSelectedConsentFile(file)
+      setConsentUploadMessage('')
+    }
+  }
+
+  const handleConsentUpload = async () => {
+    if (!selectedConsentFile) {
+      setConsentUploadMessage('Please select a file first')
+      return
+    }
+
+    setIsUploadingConsent(true)
+    setConsentUploadMessage('')
+
+    try {
+      const formData = new FormData()
+      formData.append('consent_form', selectedConsentFile)
+
+      const response = await fetch('/api/registration/consent-form', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: formData
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        await refreshRegistration()
+        setSelectedConsentFile(null)
+        setConsentUploadMessage('Consent form uploaded successfully!')
+      } else {
+        setConsentUploadMessage(result.detail || 'Failed to upload consent form')
+      }
+    } catch (error) {
+      setConsentUploadMessage('Failed to upload consent form')
+    } finally {
+      setIsUploadingConsent(false)
+    }
+  }
+
+  const consentFormSubmitted = registration?.consent_form_url
+  const formUrl = registration?.is_minor ? MINOR_FORM_URL : ADULT_FORM_URL
+
   if (!registration) {
     return (
       <div className="dashboard-container">
@@ -96,14 +163,92 @@ const Dashboard = () => {
           </button>
           <h1>Welcome, {registration.full_name}!</h1>
           <p className="registration-status">
-            Registration Status: <span className="status-confirmed">Confirmed</span>
+            Registration Status:{' '}
+            {consentFormSubmitted ? (
+              <span className="status-confirmed">Confirmed</span>
+            ) : (
+              <span className="status-pending">Not Registered</span>
+            )}
           </p>
           <button className="sign-out-btn" onClick={handleSignOut}>
             <FaSignOutAlt /> Sign Out
           </button>
         </div>
 
-        {registration.hacker_code && (
+        {!consentFormSubmitted && (
+          <motion.div
+            className="consent-form-alert"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="alert-header">
+              <FaExclamationTriangle className="alert-icon" />
+              <h3>Action Required: Submit Your Consent Form</h3>
+            </div>
+            <p className="alert-description">
+              Your registration is incomplete. Please download, sign, and upload your
+              {registration.is_minor ? ' Photo Release & Guardian Consent Form' : ' Photo Release Form'} to complete your registration.
+            </p>
+
+            <div className="consent-form-actions">
+              <a
+                href={formUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="download-form-btn"
+              >
+                <FaDownload /> Download {registration.is_minor ? 'Minor Consent Form' : 'Photo Release Form'}
+              </a>
+
+              <div className="upload-section">
+                <input
+                  type="file"
+                  ref={consentFileInputRef}
+                  onChange={handleConsentFileChange}
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  style={{ display: 'none' }}
+                />
+                <div
+                  className={`file-upload-area ${selectedConsentFile ? 'has-file' : ''}`}
+                  onClick={() => consentFileInputRef.current?.click()}
+                >
+                  {selectedConsentFile ? (
+                    <>
+                      <p className="file-upload-text">
+                        <strong>File selected:</strong> {selectedConsentFile.name}
+                      </p>
+                      <p className="file-upload-hint">Click to change file</p>
+                    </>
+                  ) : (
+                    <p className="file-upload-text">
+                      <strong>Click to upload</strong> your signed form<br />
+                      PDF, JPEG, or PNG (max 5MB)
+                    </p>
+                  )}
+                </div>
+
+                {selectedConsentFile && (
+                  <button
+                    className="submit-consent-btn"
+                    onClick={handleConsentUpload}
+                    disabled={isUploadingConsent}
+                  >
+                    {isUploadingConsent ? 'Uploading...' : 'Submit Consent Form'}
+                  </button>
+                )}
+              </div>
+
+              {consentUploadMessage && (
+                <div className={`consent-message ${consentUploadMessage.includes('success') ? 'success' : 'error'}`}>
+                  {consentUploadMessage}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {registration.hacker_code && consentFormSubmitted && (
           <div className="hacker-code-section">
             <motion.div
               className="hacker-code-card"

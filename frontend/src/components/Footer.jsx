@@ -146,7 +146,7 @@ const Footer = ({ onRegisterClick }) => {
               whileTap={{ scale: 0.95 }}
               onClick={onRegisterClick}
             >
-              Pre Register
+              Register
             </motion.button>
           </motion.div>
         </div>
