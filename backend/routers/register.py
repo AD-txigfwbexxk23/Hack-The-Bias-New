@@ -52,8 +52,8 @@ async def register(
     # Consent
     rules_consent: bool = Form(False),
     is_minor: bool = Form(False),
-    # File upload - required for all participants
-    consent_form: UploadFile = File(...),
+    # File upload - optional, can be submitted later from dashboard
+    consent_form: Optional[UploadFile] = File(None),
     # Auth
     current_user=Depends(get_current_user)
 ):
@@ -98,8 +98,10 @@ async def register(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
-    # Handle consent form upload (required for all participants)
-    consent_form_url = await upload_guardian_form(consent_form, user_id)
+    # Handle consent form upload (optional - can be submitted later from dashboard)
+    consent_form_url = None
+    if consent_form:
+        consent_form_url = await upload_guardian_form(consent_form, user_id)
 
     # Generate unique hacker code
     hacker_code = generate_hacker_code()
@@ -209,14 +211,53 @@ async def get_registration_status(current_user=Depends(get_current_user)):
     """Check if user is registered"""
 
     try:
-        result = supabase.table("registrations").select("id, created_at").eq("user_id", current_user.id).execute()
+        result = supabase.table("registrations").select("id, created_at, consent_form_url").eq("user_id", current_user.id).execute()
 
         return {
             "is_registered": len(result.data) > 0,
-            "registration_date": result.data[0]['created_at'] if result.data else None
+            "registration_date": result.data[0]['created_at'] if result.data else None,
+            "consent_form_submitted": bool(result.data[0]['consent_form_url']) if result.data else False
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to check registration status: {str(e)}")
+
+
+@router.post("/registration/consent-form")
+async def upload_consent_form(
+    consent_form: UploadFile = File(...),
+    current_user=Depends(get_current_user)
+):
+    """Upload consent form after registration"""
+
+    user_id = current_user.id
+
+    # Check if user is registered
+    try:
+        result = supabase.table("registrations").select("id, consent_form_url").eq("user_id", user_id).execute()
+
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Registration not found. Please complete registration first.")
+
+        # Upload the consent form
+        consent_form_url = await upload_guardian_form(consent_form, user_id)
+
+        # Update the registration with the consent form URL
+        update_result = supabase.table("registrations").update({
+            "consent_form_url": consent_form_url
+        }).eq("user_id", user_id).execute()
+
+        if not update_result.data:
+            raise HTTPException(status_code=500, detail="Failed to update registration with consent form")
+
+        return {
+            "success": True,
+            "message": "Consent form uploaded successfully",
+            "consent_form_url": consent_form_url
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload consent form: {str(e)}")
 
 
 @router.post("/send-google-signup-email")

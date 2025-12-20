@@ -210,6 +210,21 @@
   color: #2A3558;
 }
 
+.consent-notice {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  margin-top: var(--space-md);
+}
+
+.consent-notice p {
+  color: #0369a1;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .step-container {
     gap: var(--space-md);
