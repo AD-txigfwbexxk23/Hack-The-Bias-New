@@ -44,7 +44,7 @@ const Rules = () => {
           <p>
             Please refer to the full schedule in the{" "}
             <a
-              href="/event-guide"
+              href="https://www.notion.so/Hack-the-Bias-Event-Guide-2ae21d407f5080c19d42d200fed62d47#2ae21d407f5080289fa0efe81fd9918d"
               target="_blank"
               rel="noopener noreferrer"
             >
