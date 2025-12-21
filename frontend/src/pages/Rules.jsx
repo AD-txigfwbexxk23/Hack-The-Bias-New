@@ -77,6 +77,48 @@ const Rules = () => {
           </ul>
         </div>
 
+        <div className="rules-section">
+          <h2>Artificial Intelligence (AI) Policy</h2>
+          <p>
+            Generative AI tools (ChatGPT, GitHub Copilot, Claude, etc.) are <strong>permitted</strong> for code generation, 
+            debugging, content creation, and research assistance.
+          </p>
+          <p>
+            <strong>Understanding Requirement:</strong> You must be able to explain and modify any AI-generated 
+            code or content in your submission. Judges may ask detailed questions about implementation details.
+          </p>
+          <ul>
+            <li><strong>Permitted:</strong> Using AI for coding assistance, debugging, research, and content creation</li>
+            <li><strong>Required:</strong> Complete understanding of all AI-generated code and content</li>
+            <li><strong>Prohibited:</strong> Blind copying without understanding or claiming AI work as entirely original</li>
+            <li><strong>Enforcement:</strong> Teams unable to explain their solution may face disqualification</li>
+          </ul>
+          <p>
+            Above all, use AI responsibly and avoid exposing sensitive data.
+          </p>
+        </div>
+
+        <div className="rules-section">
+          <h2>Commercial Promotion Policy</h2>
+          <p>
+            Hack the Bias is dedicated to fostering innovation and learning. Unauthorized commercial promotion 
+            detracts from the collaborative hackathon environment.
+          </p>
+          <ul>
+            <li><strong>Prohibited:</strong> Promoting personal businesses, external projects, or services through physical materials (signs, posters, t-shirts, banners, etc.)</li>
+            <li><strong>Prohibited:</strong> Creating media content (photos, videos, livestreams) that primarily promotes personal businesses or projects unrelated to the hackathon</li>
+            <li><strong>Prohibited:</strong> Distributing business cards, flyers, or promotional materials for external ventures</li>
+            <li><strong>Focus:</strong> All presentations and demonstrations should center on work developed during the hackathon period</li>
+          </ul>
+          <p>
+            <strong>Exceptions:</strong> Official event sponsors and organizations with explicit organizer permission 
+            are exempt from this policy. Contact organizers for approval of any promotional materials.
+          </p>
+          <p>
+            <strong>Enforcement:</strong> Violating this policy may result in removal of materials, disqualification, 
+            or expulsion from the event.
+          </p>
+        </div>
 
         <div className="rules-section">
           <h2>Expected Behavior</h2>
@@ -84,7 +126,7 @@ const Rules = () => {
             <li>Be respectful and inclusive in all interactions.</li>
             <li>Listen actively and be open to different perspectives.</li>
             <li>Help create a welcoming, beginner-friendly environment.</li>
-            <li>Respect privacy — do not share others’ ideas or personal information without consent.</li>
+            <li>Respect privacy — do not share others' ideas or personal information without consent.</li>
             <li>Follow venue safety rules and organizer instructions at all times.</li>
             <li>Report any concerns to event organizers immediately.</li>
           </ul>

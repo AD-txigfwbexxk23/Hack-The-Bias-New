@@ -44,6 +44,7 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
     // Consent
     rules_consent: false,
     is_minor: false,
+    consent_form_file: null,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -100,6 +101,11 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
 
       case 4: // Consent
         if (!formData.rules_consent) errors.rules_consent = 'You must agree to the rules'
+        if (!formData.consent_form_file) {
+          errors.consent_form_file = formData.is_minor
+            ? 'Please upload the signed guardian consent and photo release form'
+            : 'Please upload the signed photo release form'
+        }
         break
     }
 
@@ -153,6 +159,11 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
       if (formData.hackathon_count) submitData.append('hackathon_count', formData.hackathon_count)
       if (formData.relevant_skills) submitData.append('relevant_skills', formData.relevant_skills)
       if (formData.general_comments) submitData.append('general_comments', formData.general_comments)
+
+      // File upload - consent form is required for everyone
+      if (formData.consent_form_file) {
+        submitData.append('consent_form', formData.consent_form_file)
+      }
 
       const response = await fetch('/api/register', {
         method: 'POST',
@@ -266,8 +277,8 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
                     <h3>Important: Check Your Email!</h3>
                     <p>We've sent you a confirmation email with important details about the hackathon.</p>
                     <div className="spam-warning">
-                      <strong>⚠️ Check your Spam/Junk folder!</strong>
-                      <p>If you find our email there, please mark it as "Not Spam" so you don't miss future updates.</p>
+                      <strong>⚠️ Check your Promotions and Spam/Junk folder!</strong>
+                      <p>If you find our email there, please mark it as "Not Spam" or drag the email into your primary inbox so you don't miss future updates.</p>
                     </div>
                   </div>
                   <motion.button
