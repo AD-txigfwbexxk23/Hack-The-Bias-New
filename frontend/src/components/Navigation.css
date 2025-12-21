@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 .nav-logo-link {
@@ -55,7 +55,7 @@
 .nav-menu {
   display: flex;
   list-style: none;
-  gap: var(--space-xl);
+  gap: var(--space-md);
   align-items: center;
   flex: 1;
   justify-content: center;
@@ -94,7 +94,25 @@
 .nav-auth-buttons {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
+}
+
+.nav-admin-btn {
+  padding: 0.45rem 0.9rem;
+  background: transparent;
+  color: #FFFFFF;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  transition: all var(--duration-normal) ease;
+  display: flex;
+  align-items: center;
+}
+
+.nav-admin-btn:hover {
+  border-color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .nav-login-btn {
@@ -294,6 +312,23 @@
   border-color: #FFFFFF;
 }
 
+.mobile-admin-btn {
+  padding: var(--space-md);
+  background: rgba(157, 180, 245, 0.2);
+  color: #FFFFFF;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid rgba(157, 180, 245, 0.6);
+  margin-top: var(--space-md);
+  text-align: center;
+}
+
+.mobile-admin-btn:hover {
+  background: rgba(157, 180, 245, 0.35);
+  border-color: rgba(157, 180, 245, 0.9);
+}
+
 .mobile-signout-btn {
   padding: var(--space-md);
   background: transparent;
@@ -343,4 +378,3 @@
     font-size: 1.25rem;
   }
 }
-
