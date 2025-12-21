@@ -100,10 +100,16 @@ const DemographicsStep = ({ formData, updateFormData, errors }) => {
       )}
 
       {formData.education_level === 'recent_graduate' && (
-        <div className="form-group">
-          <label>
-            Major / Program <span className="required">*</span>
-          </label>
+        <>
+          <div className="consent-notice">
+            <p>
+              <strong>Note for Recent Graduates:</strong> You must have convocated no earlier than January 16th, 2025, and your team must include at least 2 other current students.
+            </p>
+          </div>
+          <div className="form-group">
+            <label>
+              Major / Program <span className="required">*</span>
+            </label>
           <input
             type="text"
             value={formData.major || ''}
@@ -113,6 +119,7 @@ const DemographicsStep = ({ formData, updateFormData, errors }) => {
           />
           {errors.major && <span className="field-error">{errors.major}</span>}
         </div>
+        </>
       )}
 
       {formData.education_level === 'other' && (

@@ -69,6 +69,17 @@
   color: #153166;
 }
 
+.rules-section a {
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 600;
+  transition: color var(--duration-normal) ease;
+}
+
+.rules-section a:hover {
+  color: #1d4ed8;
+}
+
 .rules-placeholder {
   margin-top: var(--space-xl);
   padding: var(--space-lg);
