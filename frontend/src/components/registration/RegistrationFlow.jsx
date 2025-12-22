@@ -101,11 +101,7 @@ const RegistrationFlow = ({ isOpen, onClose }) => {
 
       case 4: // Consent
         if (!formData.rules_consent) errors.rules_consent = 'You must agree to the rules'
-        if (!formData.consent_form_file) {
-          errors.consent_form_file = formData.is_minor
-            ? 'Please upload the signed guardian consent and photo release form'
-            : 'Please upload the signed photo release form'
-        }
+        // Note: consent_form_file is uploaded after registration from the dashboard
         break
     }
 
