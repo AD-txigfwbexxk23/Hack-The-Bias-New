@@ -5,36 +5,16 @@ These routes handle authentication-related operations that require
 server-side privileges, such as auto-verifying user emails.
 """
 
+import logging
 from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel, EmailStr
 from utils.auth import get_current_user
 from utils.auth_helpers import auto_verify_user_email, create_user_without_confirmation
-import logging
-import time
-from collections import defaultdict
+from utils.rate_limit import strict_rate_limit
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
-
-# Simple in-memory rate limiter for user creation
-# In production, consider using Redis for distributed rate limiting
-_rate_limit_store = defaultdict(list)
-RATE_LIMIT_WINDOW = 60  # seconds
-RATE_LIMIT_MAX_REQUESTS = 5  # max requests per IP per window
-
-
-def check_rate_limit(ip: str) -> bool:
-    """Check if IP has exceeded rate limit. Returns True if allowed."""
-    now = time.time()
-    # Clean old entries
-    _rate_limit_store[ip] = [t for t in _rate_limit_store[ip] if now - t < RATE_LIMIT_WINDOW]
-    # Check limit
-    if len(_rate_limit_store[ip]) >= RATE_LIMIT_MAX_REQUESTS:
-        return False
-    # Record this request
-    _rate_limit_store[ip].append(now)
-    return True
 
 
 class AutoVerifyRequest(BaseModel):
@@ -51,8 +31,10 @@ class CreateUserRequest(BaseModel):
 
 @router.post("/auto-verify-email")
 async def auto_verify_email(
+    req: Request,
     request: AutoVerifyRequest,
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    _rate_limit: str = Depends(strict_rate_limit)
 ):
     """
     Auto-verify the current user's email address.
@@ -61,6 +43,7 @@ async def auto_verify_email(
     bypassing the confirmation email requirement.
 
     Only the user themselves can verify their own email (verified via JWT).
+    Rate limited to 5 requests per minute per IP.
     """
     # Ensure user can only verify their own email
     if current_user.id != request.user_id:
@@ -84,7 +67,11 @@ async def auto_verify_email(
 
 
 @router.post("/create-user-verified")
-async def create_user_verified(request: CreateUserRequest, req: Request):
+async def create_user_verified(
+    req: Request,
+    request: CreateUserRequest,
+    _rate_limit: str = Depends(strict_rate_limit)
+):
     """
     Create a new user with email already verified (no confirmation required).
 
@@ -93,16 +80,6 @@ async def create_user_verified(request: CreateUserRequest, req: Request):
 
     Rate limited to 5 requests per minute per IP.
     """
-    # Get client IP (handle proxies)
-    client_ip = req.headers.get("x-forwarded-for", req.client.host).split(",")[0].strip()
-
-    if not check_rate_limit(client_ip):
-        logger.warning(f"Rate limit exceeded for IP: {client_ip}")
-        raise HTTPException(
-            status_code=429,
-            detail="Too many signup attempts. Please try again in a minute."
-        )
-
     result = await create_user_without_confirmation(
         email=request.email,
         password=request.password,

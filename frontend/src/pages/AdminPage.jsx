@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FaCheck, FaSortDown, FaSortUp } from 'react-icons/fa'
+import { FaCheck, FaExternalLinkAlt, FaSortDown, FaSortUp } from 'react-icons/fa'
 import { useAuth } from '../contexts/AuthContext'
 import './AdminPage.css'
 
@@ -142,10 +142,36 @@ const AdminPage = () => {
         fridayCheckIn,
         saturdayCheckIn,
         foodFriday,
-        foodSaturday
+        foodSaturday,
+        consentFormUrl: record.consent_form_url || null
       }
     })
   ), [registrations])
+
+  const openConsentForm = async (consentFormPath) => {
+    try {
+      const response = await fetch(
+        `/api/admin/consent-form-url?path=${encodeURIComponent(consentFormPath)}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`
+          }
+        }
+      )
+
+      if (!response.ok) {
+        throw new Error('Failed to get consent form URL')
+      }
+
+      const data = await response.json()
+      if (data.signed_url) {
+        window.open(data.signed_url, '_blank')
+      }
+    } catch (err) {
+      console.error('Failed to open consent form:', err)
+      alert('Failed to open consent form. Please try again.')
+    }
+  }
 
   const summary = useMemo(() => {
     const total = normalizedRegistrations.length
@@ -333,12 +359,13 @@ const AdminPage = () => {
                   <th onClick={() => toggleSort('saturdayCheckIn')}>
                     Saturday check-in {sortIcon('saturdayCheckIn')}
                   </th>
+                  <th>Consent Form</th>
                 </tr>
               </thead>
               <tbody>
                 {sortedRegistrations.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="admin-empty-row">
+                    <td colSpan={6} className="admin-empty-row">
                       No registrations match the current filters.
                     </td>
                   </tr>
@@ -355,6 +382,17 @@ const AdminPage = () => {
                       </td>
                       <td>
                         {record.saturdayCheckIn ? <FaCheck className="status-icon" /> : '—'}
+                      </td>
+                      <td>
+                        {record.consentFormUrl ? (
+                          <button
+                            type="button"
+                            className="consent-form-link"
+                            onClick={() => openConsentForm(record.consentFormUrl)}
+                          >
+                            View <FaExternalLinkAlt />
+                          </button>
+                        ) : '—'}
                       </td>
                     </tr>
                   ))

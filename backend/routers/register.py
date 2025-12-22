@@ -1,13 +1,17 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form
-from typing import Optional
-from pydantic import BaseModel
+import logging
 import random
 import string
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Request
+from pydantic import BaseModel
 from utils.supabase_client import supabase
 from utils.auth import get_current_user
 from utils.storage import upload_guardian_form
 from utils.email import send_google_signup_email, send_registration_complete_email
+from utils.rate_limit import standard_rate_limit, rate_limit_by_user, RateLimitConfig
 from models.registration import RegistrationRequest, RegistrationResponse, EducationLevel
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleSignupEmailRequest(BaseModel):
@@ -30,6 +34,7 @@ router = APIRouter()
 
 @router.post("/register", response_model=RegistrationResponse)
 async def register(
+    request: Request,
     # Form fields - Demographics
     education_level: str = Form(...),
     education_level_other: Optional[str] = Form(None),
@@ -55,9 +60,11 @@ async def register(
     # File upload - optional, can be submitted later from dashboard
     consent_form: Optional[UploadFile] = File(None),
     # Auth
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    # Rate limiting
+    _rate_limit: str = Depends(standard_rate_limit)
 ):
-    """Register a new hacker for the hackathon"""
+    """Register a new hacker for the hackathon. Rate limited to 10 requests per minute."""
 
     # Validate with Pydantic model
     try:
@@ -224,10 +231,12 @@ async def get_registration_status(current_user=Depends(get_current_user)):
 
 @router.post("/registration/consent-form")
 async def upload_consent_form(
+    request: Request,
     consent_form: UploadFile = File(...),
-    current_user=Depends(get_current_user)
+    current_user=Depends(get_current_user),
+    _rate_limit: str = Depends(standard_rate_limit)
 ):
-    """Upload consent form after registration"""
+    """Upload consent form after registration. Rate limited to 10 requests per minute."""
 
     user_id = current_user.id
 
@@ -265,19 +274,26 @@ async def send_google_signup_welcome_email(
     request: GoogleSignupEmailRequest,
     current_user=Depends(get_current_user)
 ):
-    """Send welcome email to users who signed up via Google OAuth"""
+    """Send welcome email to users who signed up via Google OAuth. Rate limited to 5 emails per 5 minutes per user."""
 
     # Verify that the email matches the authenticated user
     if request.email != current_user.email:
         raise HTTPException(status_code=403, detail="Email mismatch")
 
+    # Rate limit by user ID to prevent email spam
+    rate_limit_by_user(
+        current_user.id,
+        "email_google_signup",
+        RateLimitConfig.EMAIL_WINDOW,
+        RateLimitConfig.EMAIL_MAX,
+        "Too many email requests. Please wait before requesting another email."
+    )
+
     try:
         await send_google_signup_email(request.email, request.name)
         return {"success": True, "message": "Welcome email sent"}
     except Exception as e:
-        # Log the error but don't fail the signup process
-        import logging
-        logging.error(f"Failed to send Google signup email: {e}")
+        logger.error(f"Failed to send Google signup email: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
 
 
@@ -286,16 +302,24 @@ async def send_registration_complete_welcome_email(
     request: GoogleSignupEmailRequest,
     current_user=Depends(get_current_user)
 ):
-    """Send registration complete email after user finishes full registration"""
+    """Send registration complete email after user finishes full registration. Rate limited to 5 emails per 5 minutes per user."""
 
     # Verify that the email matches the authenticated user
     if request.email != current_user.email:
         raise HTTPException(status_code=403, detail="Email mismatch")
 
+    # Rate limit by user ID to prevent email spam
+    rate_limit_by_user(
+        current_user.id,
+        "email_registration_complete",
+        RateLimitConfig.EMAIL_WINDOW,
+        RateLimitConfig.EMAIL_MAX,
+        "Too many email requests. Please wait before requesting another email."
+    )
+
     try:
         await send_registration_complete_email(request.email, request.name)
         return {"success": True, "message": "Registration complete email sent"}
     except Exception as e:
-        import logging
-        logging.error(f"Failed to send registration complete email: {e}")
+        logger.error(f"Failed to send registration complete email: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")

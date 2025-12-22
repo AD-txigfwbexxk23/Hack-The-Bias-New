@@ -1,6 +1,9 @@
+import logging
 from fastapi import UploadFile, HTTPException
 from utils.supabase_client import supabase
 import uuid
+
+logger = logging.getLogger(__name__)
 
 ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png']
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
@@ -50,6 +53,12 @@ def get_guardian_form_url(filename: str) -> str:
             filename,
             3600  # 1 hour expiry
         )
-        return result.get('signedURL', '')
+        logger.info("Supabase create_signed_url result: %s", result)
+        # Handle both possible key names from different SDK versions
+        signed_url = result.get('signedUrl') or result.get('signedURL') or ''
+        if not signed_url:
+            logger.warning("No signed URL in result for file: %s", filename)
+        return signed_url
     except Exception as e:
+        logger.exception("Failed to create signed URL for %s: %s", filename, e)
         return ''
