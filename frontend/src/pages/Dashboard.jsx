@@ -386,6 +386,14 @@ const Dashboard = () => {
             <li>You'll find out if you've been accepted to the beginner track closer to the event date.</li>
             <li>Keep an eye on your email for updates and important announcements.</li>
             <li>
+              Follow us on{' '}
+              <a
+                href="https://www.instagram.com/hackthebias.ucalgary/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Instagram</a> for updates and highlights.
+            </li>
+            <li>
               Check out the <a
                 href="https://www.notion.so/Hack-the-Bias-Pre-Event-Packet-2ae21d407f5080c19d42d200fed62d47"
                 target="_blank"

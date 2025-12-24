@@ -13,7 +13,7 @@ const Prizes = () => {
     {
       rank: '1st',
       title: '1st Place',
-      amount: '$900',
+      amount: '$850',
       icon: FaTrophy,
       color: '#FFD700',
       gradient: 'linear-gradient(135deg, #FFD700, #FFA500)',
@@ -21,7 +21,7 @@ const Prizes = () => {
     {
       rank: '2nd',
       title: '2nd Place',
-      amount: '$550',
+      amount: '$500',
       icon: FaMedal,
       color: '#C0C0C0',
       gradient: 'linear-gradient(135deg, #C0C0C0, #A8A8A8)',
@@ -40,7 +40,7 @@ const Prizes = () => {
     {
       rank: '1st',
       title: '1st Place',
-      amount: '$700',
+      amount: '$650',
       icon: FaTrophy,
       color: '#FFD700',
       gradient: 'linear-gradient(135deg, #FFD700, #FFA500)',
@@ -64,7 +64,7 @@ const Prizes = () => {
   ]
 
   const sidePrize = {
-    title: 'KPMG Challenge',
+    title: 'KPMG Custom Challenge',
     amount: '$400',
     icon: FaGift,
     color: '#00338D',

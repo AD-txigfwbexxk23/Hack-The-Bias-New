@@ -328,6 +328,7 @@
   margin-top: var(--space-md);
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
 .btn-primary,
