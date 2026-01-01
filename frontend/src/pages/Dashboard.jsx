@@ -394,6 +394,13 @@ const Dashboard = () => {
               >Instagram</a> for updates and highlights.
             </li>
             <li>
+              Join our <a
+                href="https://discord.gg/kSdkjMcfG"
+                target="_blank"
+                rel="noopener noreferrer"
+              >Discord</a> for announcements and community chat.
+            </li>
+            <li>
               Check out the <a
                 href="https://www.notion.so/Hack-the-Bias-Pre-Event-Packet-2ae21d407f5080c19d42d200fed62d47"
                 target="_blank"
