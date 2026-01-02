@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FaCheck, FaExternalLinkAlt, FaSortDown, FaSortUp } from 'react-icons/fa'
+import { FaCheck, FaDownload, FaExternalLinkAlt, FaSortDown, FaSortUp } from 'react-icons/fa'
+import * as XLSX from 'xlsx'
 import { useAuth } from '../contexts/AuthContext'
 import './AdminPage.css'
 
@@ -19,18 +20,16 @@ const formatDate = (value) => {
 }
 
 const AdminPage = () => {
-  const { session } = useAuth()
+  const { session, isAdmin } = useAuth()
   const [registrations, setRegistrations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
-  const [preregistrations, setPreregistrations] = useState([])
-  const [isPreregLoading, setIsPreregLoading] = useState(true)
   const [error, setError] = useState('')
-  const [preregError, setPreregError] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'asc' })
   const [fridayFilter, setFridayFilter] = useState('all')
   const [saturdayFilter, setSaturdayFilter] = useState('all')
   const [registrationSearch, setRegistrationSearch] = useState('')
-  const [preregSearch, setPreregSearch] = useState('')
+  const [advancedView, setAdvancedView] = useState(false)
+  const [selectedRowId, setSelectedRowId] = useState(null)
 
   useEffect(() => {
     const parseErrorDetail = async (response, fallbackMessage) => {
@@ -72,39 +71,12 @@ const AdminPage = () => {
       }
     }
 
-    const loadPreregistrations = async () => {
-      setIsPreregLoading(true)
-      setPreregError('')
-
-      try {
-        const response = await fetch('/api/admin/preregistrations', {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`
-          }
-        })
-
-        if (!response.ok) {
-          const detail = await parseErrorDetail(response, 'Failed to load preregistrations')
-          throw new Error(detail)
-        }
-
-        const data = await response.json()
-        setPreregistrations(data.preregistrations || [])
-      } catch (err) {
-        setPreregError(err.message || 'Failed to load preregistrations')
-      } finally {
-        setIsPreregLoading(false)
-      }
-    }
-
     if (!session?.access_token) {
       setIsLoading(false)
-      setIsPreregLoading(false)
       return
     }
 
     loadRegistrations()
-    loadPreregistrations()
   }, [session])
 
   const normalizedRegistrations = useMemo(() => (
@@ -143,7 +115,10 @@ const AdminPage = () => {
         saturdayCheckIn,
         foodFriday,
         foodSaturday,
-        consentFormUrl: record.consent_form_url || null
+        consentFormUrl: record.consent_form_url || null,
+        createdAt: record.created_at || null,
+        stayingOvernight: toBoolean(record.staying_overnight),
+        interestedInBeginner: toBoolean(record.interested_in_beginner)
       }
     })
   ), [registrations])
@@ -180,12 +155,16 @@ const AdminPage = () => {
     const fullyComplete = normalizedRegistrations.filter(
       (r) => r.fridayCheckIn && r.saturdayCheckIn
     ).length
+    const interestedInBeginner = normalizedRegistrations.filter((r) => r.interestedInBeginner).length
+    const stayingOvernight = normalizedRegistrations.filter((r) => r.stayingOvernight).length
 
     return {
       total,
       fridayCheckIns,
       saturdayCheckIns,
-      fullyComplete
+      fullyComplete,
+      interestedInBeginner,
+      stayingOvernight
     }
   }, [normalizedRegistrations])
 
@@ -207,15 +186,6 @@ const AdminPage = () => {
     })
   ), [normalizedRegistrations, fridayFilter, saturdayFilter, registrationSearch])
 
-  const filteredPreregistrations = useMemo(() => (
-    preregistrations.filter((record) => {
-      const searchValue = preregSearch.trim().toLowerCase()
-      const name = formatName(record).toLowerCase()
-      const email = formatEmail(record).toLowerCase()
-      return !searchValue || name.includes(searchValue) || email.includes(searchValue)
-    })
-  ), [preregistrations, preregSearch])
-
   const sortedRegistrations = useMemo(() => {
     const sorted = [...filteredRegistrations]
     const { key, direction } = sortConfig
@@ -233,6 +203,14 @@ const AdminPage = () => {
       }
       if (key === 'saturdayCheckIn') {
         return (Number(a.saturdayCheckIn) - Number(b.saturdayCheckIn)) * multiplier
+      }
+      if (key === 'stayingOvernight') {
+        return (Number(a.stayingOvernight) - Number(b.stayingOvernight)) * multiplier
+      }
+      if (key === 'createdAt') {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return (dateA - dateB) * multiplier
       }
       return 0
     })
@@ -256,13 +234,79 @@ const AdminPage = () => {
     return sortConfig.direction === 'asc' ? <FaSortUp /> : <FaSortDown />
   }
 
-  if (!session?.access_token) {
+  const exportToExcel = () => {
+    const dataToExport = registrations.map((record) => ({
+      'ID': record.id || '',
+      'User ID': record.user_id || '',
+      'Full Name': record.full_name || record.name || '',
+      'Email': record.email || '',
+      'Hacker Code': record.hacker_code || '',
+      'Status': record.status || '',
+      'Created At': record.created_at || '',
+      'Education Level': record.education_level || '',
+      'Education Level Other': record.education_level_other || '',
+      'Grade': record.grade || '',
+      'Year': record.year || '',
+      'Major': record.major || '',
+      'Gender Identity': record.gender_identity || '',
+      'Dietary Restrictions': record.dietary_restrictions || '',
+      'Hackathon Experience': record.hackathon_experience ? 'Yes' : 'No',
+      'Hackathon Count': record.hackathon_count || '',
+      'Relevant Skills': record.relevant_skills || '',
+      'Interested in Beginner': record.interested_in_beginner ? 'Yes' : 'No',
+      'Why Interested': record.why_interested || '',
+      'Creative Project': record.creative_project || '',
+      'Staying Overnight': record.staying_overnight ? 'Yes' : 'No',
+      'General Comments': record.general_comments || '',
+      'Rules Consent': record.rules_consent ? 'Yes' : 'No',
+      'Is Minor': record.is_minor ? 'Yes' : 'No',
+      'Consent Form URL': record.consent_form_url || '',
+      'Friday Check-in': record.check_in_friday || record.friday_check_in || record.checked_in_friday ? 'Yes' : 'No',
+      'Saturday Check-in': record.check_in_saturday || record.saturday_check_in || record.checked_in_saturday ? 'Yes' : 'No',
+      'Friday Food Received': record.food_received_friday || record.friday_food_received ? 'Yes' : 'No',
+      'Saturday Food Received': record.food_received_saturday || record.saturday_food_received ? 'Yes' : 'No',
+    }))
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Registrations')
+
+    const today = new Date().toISOString().split('T')[0]
+    XLSX.writeFile(workbook, `hack-the-bias-registrations-${today}.xlsx`)
+  }
+
+  const advancedColumns = [
+    { key: 'full_name', label: 'Full Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'hacker_code', label: 'Hacker Code' },
+    { key: 'status', label: 'Status' },
+    { key: 'created_at', label: 'Created At', format: formatDate },
+    { key: 'education_level', label: 'Education Level' },
+    { key: 'education_level_other', label: 'Education (Other)' },
+    { key: 'grade', label: 'Grade' },
+    { key: 'year', label: 'Year' },
+    { key: 'major', label: 'Major' },
+    { key: 'gender_identity', label: 'Gender Identity' },
+    { key: 'dietary_restrictions', label: 'Dietary Restrictions' },
+    { key: 'hackathon_experience', label: 'Hackathon Exp', format: (v) => v ? 'Yes' : 'No' },
+    { key: 'hackathon_count', label: 'Hackathon Count' },
+    { key: 'relevant_skills', label: 'Relevant Skills' },
+    { key: 'interested_in_beginner', label: 'Beginner Interest', format: (v) => v ? 'Yes' : 'No' },
+    { key: 'why_interested', label: 'Why Interested' },
+    { key: 'creative_project', label: 'Creative Project' },
+    { key: 'staying_overnight', label: 'Staying Overnight', format: (v) => v ? 'Yes' : 'No' },
+    { key: 'general_comments', label: 'General Comments' },
+    { key: 'rules_consent', label: 'Rules Consent', format: (v) => v ? 'Yes' : 'No' },
+    { key: 'is_minor', label: 'Is Minor', format: (v) => v ? 'Yes' : 'No' },
+  ]
+
+  if (!session?.access_token || !isAdmin) {
     return (
       <div className="admin-page">
         <div className="admin-container">
           <div className="admin-empty-state">
             <h1>Admin Dashboard</h1>
-            <p>Please sign in with an admin account to view registrations.</p>
+            <p>You do not have permission to access this page.</p>
           </div>
         </div>
       </div>
@@ -277,12 +321,37 @@ const AdminPage = () => {
             <h1>Admin Dashboard</h1>
             <p>Track registrations, check-ins, and meal distribution at a glance.</p>
           </div>
+          <div className="admin-header-actions">
+            <button
+              type="button"
+              className={`view-toggle-btn ${advancedView ? 'active' : ''}`}
+              onClick={() => setAdvancedView(!advancedView)}
+            >
+              {advancedView ? 'Simple View' : 'Advanced View'}
+            </button>
+            <button
+              type="button"
+              className="export-btn"
+              onClick={exportToExcel}
+              disabled={registrations.length === 0}
+            >
+              <FaDownload /> Export Excel
+            </button>
+          </div>
         </div>
 
         <div className="admin-summary-grid">
           <div className="summary-card">
             <span>Total registrations</span>
             <strong>{summary.total}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Interested in beginner</span>
+            <strong>{summary.interestedInBeginner}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Staying overnight</span>
+            <strong>{summary.stayingOvernight}</strong>
           </div>
           <div className="summary-card">
             <span>Friday check-ins</span>
@@ -339,6 +408,46 @@ const AdminPage = () => {
           <div className="admin-empty-state">Loading registrations...</div>
         ) : error ? (
           <div className="admin-empty-state error">{error}</div>
+        ) : advancedView ? (
+          <div className="admin-table-card advanced-table-wrapper">
+            <table className="advanced-table">
+              <thead>
+                <tr>
+                  {advancedColumns.map((col) => (
+                    <th key={col.key}>{col.label}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {registrations.length === 0 ? (
+                  <tr>
+                    <td colSpan={advancedColumns.length} className="admin-empty-row">
+                      No registrations found.
+                    </td>
+                  </tr>
+                ) : (
+                  registrations.map((record) => {
+                    const rowId = record.id || record.user_id
+                    return (
+                      <tr
+                        key={rowId}
+                        className={selectedRowId === rowId ? 'selected-row' : ''}
+                        onClick={() => setSelectedRowId(selectedRowId === rowId ? null : rowId)}
+                      >
+                        {advancedColumns.map((col) => {
+                          const value = record[col.key]
+                          const displayValue = col.format
+                            ? col.format(value)
+                            : (value ?? '—')
+                          return <td key={col.key}>{displayValue || '—'}</td>
+                        })}
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <div className="admin-table-card">
             <table>
@@ -350,8 +459,11 @@ const AdminPage = () => {
                   <th onClick={() => toggleSort('email')}>
                     Email {sortIcon('email')}
                   </th>
-                  <th onClick={() => toggleSort('registered')}>
-                    Registered {sortIcon('registered')}
+                  <th onClick={() => toggleSort('createdAt')}>
+                    Registered at {sortIcon('createdAt')}
+                  </th>
+                  <th onClick={() => toggleSort('stayingOvernight')}>
+                    Overnight {sortIcon('stayingOvernight')}
                   </th>
                   <th onClick={() => toggleSort('fridayCheckIn')}>
                     Friday check-in {sortIcon('fridayCheckIn')}
@@ -365,17 +477,22 @@ const AdminPage = () => {
               <tbody>
                 {sortedRegistrations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="admin-empty-row">
+                    <td colSpan={7} className="admin-empty-row">
                       No registrations match the current filters.
                     </td>
                   </tr>
                 ) : (
                   sortedRegistrations.map((record) => (
-                    <tr key={record.id}>
+                    <tr
+                      key={record.id}
+                      className={selectedRowId === record.id ? 'selected-row' : ''}
+                      onClick={() => setSelectedRowId(selectedRowId === record.id ? null : record.id)}
+                    >
                       <td>{record.name}</td>
                       <td>{record.email}</td>
+                      <td>{formatDate(record.createdAt)}</td>
                       <td>
-                        {record.registered ? <FaCheck className="status-icon" /> : '—'}
+                        {record.stayingOvernight ? <FaCheck className="status-icon" /> : '—'}
                       </td>
                       <td>
                         {record.fridayCheckIn ? <FaCheck className="status-icon" /> : '—'}
@@ -388,7 +505,10 @@ const AdminPage = () => {
                           <button
                             type="button"
                             className="consent-form-link"
-                            onClick={() => openConsentForm(record.consentFormUrl)}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              openConsentForm(record.consentFormUrl)
+                            }}
                           >
                             View <FaExternalLinkAlt />
                           </button>
@@ -401,59 +521,6 @@ const AdminPage = () => {
             </table>
           </div>
         )}
-
-        <div className="admin-section">
-          <div className="admin-section-header">
-            <h2>Preregistrations</h2>
-            <span>{filteredPreregistrations.length} total</span>
-          </div>
-          <div className="admin-controls">
-            <div className="filter-group">
-              <label htmlFor="prereg-search">Search preregistrations</label>
-              <input
-                id="prereg-search"
-                type="search"
-                value={preregSearch}
-                onChange={(event) => setPreregSearch(event.target.value)}
-                placeholder="Search by name or email"
-              />
-            </div>
-          </div>
-          {isPreregLoading ? (
-            <div className="admin-empty-state">Loading preregistrations...</div>
-          ) : preregError ? (
-            <div className="admin-empty-state error">{preregError}</div>
-          ) : (
-            <div className="admin-table-card">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Submitted</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPreregistrations.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="admin-empty-row">
-                        No preregistrations yet.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredPreregistrations.map((record) => (
-                      <tr key={record.id || record.email || record.created_at}>
-                        <td>{formatName(record)}</td>
-                        <td>{formatEmail(record)}</td>
-                        <td>{formatDate(record.created_at)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )

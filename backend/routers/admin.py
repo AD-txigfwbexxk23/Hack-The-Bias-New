@@ -1,4 +1,3 @@
-import os
 import logging
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from utils.auth import get_current_user
@@ -11,26 +10,33 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def get_admin_emails():
-    admin_emails_raw = os.getenv("ADMIN_EMAILS", "")
-    return [
-        email.strip().lower()
-        for email in admin_emails_raw.split(",")
-        if email.strip()
-    ]
-
-
-def is_admin_user(current_user) -> bool:
-    admin_emails = get_admin_emails()
-    if not admin_emails:
-        logger.warning("ADMIN_EMAILS not configured; denying admin access.")
+def check_is_admin(current_user) -> bool:
+    """Check if user has is_admin=true in the users table."""
+    user_id = getattr(current_user, "id", None)
+    if not user_id:
         return False
-    user_email = (current_user.email or "").lower()
-    return user_email in admin_emails
+
+    try:
+        admin_client = get_admin_client()
+        result = (
+            admin_client
+            .table("users")
+            .select("is_admin")
+            .eq("id", str(user_id))
+            .single()
+            .execute()
+        )
+
+        if result.data and result.data.get("is_admin") is True:
+            return True
+        return False
+    except Exception as exc:
+        logger.warning("Failed to check admin status for user %s: %s", user_id, exc)
+        return False
 
 
 def ensure_admin_access(current_user):
-    if not is_admin_user(current_user):
+    if not check_is_admin(current_user):
         raise HTTPException(status_code=403, detail="Admin access required")
 
 
@@ -40,7 +46,7 @@ async def admin_me(
     current_user=Depends(get_current_user),
     _rate_limit: str = Depends(admin_rate_limit)
 ):
-    return {"is_admin": is_admin_user(current_user)}
+    return {"is_admin": check_is_admin(current_user)}
 
 
 @router.get("/admin/registrations")
