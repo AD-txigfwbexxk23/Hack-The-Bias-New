@@ -25,3 +25,43 @@ CREATE POLICY "Allow service role full access" ON registrations
   USING (true)
   WITH CHECK (true);
 
+-- ============================================================================
+-- Users table for extended user data (references auth.users)
+-- ============================================================================
+-- This table stores additional user metadata like is_admin
+-- The is_admin column can only be manually edited in Supabase, never through the application
+
+CREATE TABLE IF NOT EXISTS public.users (
+  id UUID NOT NULL REFERENCES auth.users ON DELETE CASCADE,
+  is_admin BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  PRIMARY KEY (id)
+);
+
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Allow service role full access to users table
+CREATE POLICY "Allow service role full access" ON public.users
+  FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+-- Trigger to automatically create a users row when a new auth user signs up
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER SET search_path = ''
+AS $$
+BEGIN
+  INSERT INTO public.users (id)
+  VALUES (new.id);
+  RETURN new;
+END;
+$$;
+
+-- Create trigger (drop first if exists to avoid errors on re-run)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+

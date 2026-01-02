@@ -19,7 +19,7 @@ const formatDate = (value) => {
 }
 
 const AdminPage = () => {
-  const { session } = useAuth()
+  const { session, isAdmin } = useAuth()
   const [registrations, setRegistrations] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [preregistrations, setPreregistrations] = useState([])
@@ -143,7 +143,10 @@ const AdminPage = () => {
         saturdayCheckIn,
         foodFriday,
         foodSaturday,
-        consentFormUrl: record.consent_form_url || null
+        consentFormUrl: record.consent_form_url || null,
+        createdAt: record.created_at || null,
+        stayingOvernight: toBoolean(record.staying_overnight),
+        interestedInBeginner: toBoolean(record.interested_in_beginner)
       }
     })
   ), [registrations])
@@ -180,12 +183,16 @@ const AdminPage = () => {
     const fullyComplete = normalizedRegistrations.filter(
       (r) => r.fridayCheckIn && r.saturdayCheckIn
     ).length
+    const interestedInBeginner = normalizedRegistrations.filter((r) => r.interestedInBeginner).length
+    const stayingOvernight = normalizedRegistrations.filter((r) => r.stayingOvernight).length
 
     return {
       total,
       fridayCheckIns,
       saturdayCheckIns,
-      fullyComplete
+      fullyComplete,
+      interestedInBeginner,
+      stayingOvernight
     }
   }, [normalizedRegistrations])
 
@@ -234,6 +241,14 @@ const AdminPage = () => {
       if (key === 'saturdayCheckIn') {
         return (Number(a.saturdayCheckIn) - Number(b.saturdayCheckIn)) * multiplier
       }
+      if (key === 'stayingOvernight') {
+        return (Number(a.stayingOvernight) - Number(b.stayingOvernight)) * multiplier
+      }
+      if (key === 'createdAt') {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
+        return (dateA - dateB) * multiplier
+      }
       return 0
     })
 
@@ -256,13 +271,13 @@ const AdminPage = () => {
     return sortConfig.direction === 'asc' ? <FaSortUp /> : <FaSortDown />
   }
 
-  if (!session?.access_token) {
+  if (!session?.access_token || !isAdmin) {
     return (
       <div className="admin-page">
         <div className="admin-container">
           <div className="admin-empty-state">
             <h1>Admin Dashboard</h1>
-            <p>Please sign in with an admin account to view registrations.</p>
+            <p>You do not have permission to access this page.</p>
           </div>
         </div>
       </div>
@@ -283,6 +298,14 @@ const AdminPage = () => {
           <div className="summary-card">
             <span>Total registrations</span>
             <strong>{summary.total}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Interested in beginner</span>
+            <strong>{summary.interestedInBeginner}</strong>
+          </div>
+          <div className="summary-card">
+            <span>Staying overnight</span>
+            <strong>{summary.stayingOvernight}</strong>
           </div>
           <div className="summary-card">
             <span>Friday check-ins</span>
@@ -350,8 +373,11 @@ const AdminPage = () => {
                   <th onClick={() => toggleSort('email')}>
                     Email {sortIcon('email')}
                   </th>
-                  <th onClick={() => toggleSort('registered')}>
-                    Registered {sortIcon('registered')}
+                  <th onClick={() => toggleSort('createdAt')}>
+                    Registered at {sortIcon('createdAt')}
+                  </th>
+                  <th onClick={() => toggleSort('stayingOvernight')}>
+                    Overnight {sortIcon('stayingOvernight')}
                   </th>
                   <th onClick={() => toggleSort('fridayCheckIn')}>
                     Friday check-in {sortIcon('fridayCheckIn')}
@@ -365,7 +391,7 @@ const AdminPage = () => {
               <tbody>
                 {sortedRegistrations.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="admin-empty-row">
+                    <td colSpan={7} className="admin-empty-row">
                       No registrations match the current filters.
                     </td>
                   </tr>
@@ -374,8 +400,9 @@ const AdminPage = () => {
                     <tr key={record.id}>
                       <td>{record.name}</td>
                       <td>{record.email}</td>
+                      <td>{formatDate(record.createdAt)}</td>
                       <td>
-                        {record.registered ? <FaCheck className="status-icon" /> : '—'}
+                        {record.stayingOvernight ? <FaCheck className="status-icon" /> : '—'}
                       </td>
                       <td>
                         {record.fridayCheckIn ? <FaCheck className="status-icon" /> : '—'}
