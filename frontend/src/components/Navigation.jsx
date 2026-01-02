@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FaUser, FaSignOutAlt } from 'react-icons/fa'
+import { FaUser, FaSignOutAlt, FaUserShield } from 'react-icons/fa'
 import { useAuth } from '../contexts/AuthContext'
 import Vector3 from './Vector 3.svg'
 import './Navigation.css'
@@ -9,7 +9,7 @@ import './Navigation.css'
 const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { user, registration, signOut } = useAuth()
+  const { user, registration, signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -66,6 +66,11 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
   const handleSignOut = async () => {
     await signOut()
     navigate('/')
+    setIsMobileMenuOpen(false)
+  }
+
+  const handleAdminClick = () => {
+    navigate('/admin')
     setIsMobileMenuOpen(false)
   }
 
@@ -136,11 +141,25 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
         <div className="nav-auth-buttons">
           {user ? (
             <>
+              {isAdmin && (
+                <motion.button
+                  className="nav-admin-btn"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.5 }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleAdminClick}
+                >
+                  <FaUserShield style={{ marginRight: '0.5rem' }} />
+                  Admin
+                </motion.button>
+              )}
               <motion.button
                 className="nav-register-btn"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
+                transition={{ delay: isAdmin ? 0.3 : 0.25, duration: 0.5 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={buttonConfig.action}
@@ -152,7 +171,7 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
                 className="nav-signout-btn"
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.35, duration: 0.5 }}
+                transition={{ delay: isAdmin ? 0.35 : 0.3, duration: 0.5 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleSignOut}
@@ -252,11 +271,22 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
 
             {user ? (
               <>
+                {isAdmin && (
+                  <motion.button
+                    className="mobile-admin-btn"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: navItems.length * 0.05 }}
+                    onClick={handleAdminClick}
+                  >
+                    Admin Dashboard
+                  </motion.button>
+                )}
                 <motion.button
                   className="mobile-dashboard-btn"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: navItems.length * 0.05 }}
+                  transition={{ delay: navItems.length * 0.05 + (isAdmin ? 0.05 : 0) }}
                   onClick={buttonConfig.action}
                 >
                   {buttonConfig.text}
@@ -265,7 +295,7 @@ const Navigation = ({ scrollY, onRegisterClick, onLoginClick }) => {
                   className="mobile-signout-btn"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: navItems.length * 0.05 + 0.05 }}
+                  transition={{ delay: navItems.length * 0.05 + (isAdmin ? 0.1 : 0.05) }}
                   onClick={handleSignOut}
                 >
                   Sign Out

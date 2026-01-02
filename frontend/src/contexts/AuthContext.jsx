@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
   const [registration, setRegistration] = useState(null)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     // Get initial session
@@ -18,6 +19,9 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null)
       if (session?.user) {
         fetchRegistration(session.access_token)
+        fetchAdminStatus(session.access_token)
+      } else {
+        setIsAdmin(false)
       }
       setLoading(false)
     })
@@ -29,8 +33,10 @@ export const AuthProvider = ({ children }) => {
         setUser(session?.user ?? null)
         if (session?.user) {
           fetchRegistration(session.access_token)
+          fetchAdminStatus(session.access_token)
         } else {
           setRegistration(null)
+          setIsAdmin(false)
         }
       }
     )
@@ -57,6 +63,25 @@ export const AuthProvider = ({ children }) => {
       console.error('Failed to fetch registration:', error)
       setRegistration(null)
       return null
+    }
+  }
+
+  const fetchAdminStatus = async (accessToken) => {
+    try {
+      const response = await fetch('/api/admin/me', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setIsAdmin(Boolean(data.is_admin))
+      } else {
+        setIsAdmin(false)
+      }
+    } catch (error) {
+      console.error('Failed to fetch admin status:', error)
+      setIsAdmin(false)
     }
   }
 
@@ -116,6 +141,7 @@ export const AuthProvider = ({ children }) => {
     session,
     loading,
     registration,
+    isAdmin,
     signInWithEmail,
     signUpWithEmail,
     signInWithGoogle,
