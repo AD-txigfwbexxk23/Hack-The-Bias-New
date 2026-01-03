@@ -82,7 +82,11 @@ const AuthModal = ({ isOpen, onClose, mode, onModeChange, onAuthSuccess }) => {
 
     // Check for restricted email domains
     const lowerEmail = email.toLowerCase()
-    if (lowerEmail.includes('ucalgary') || lowerEmail.includes('educbe')) {
+    if (
+      lowerEmail.includes('ucalgary') ||
+      lowerEmail.includes('educbe') ||
+      lowerEmail.includes('mtroyal')
+    ) {
       setError('Please use a personal email address, not a school email.')
       setIsSubmitting(false)
       return
