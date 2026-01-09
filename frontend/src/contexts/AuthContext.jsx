@@ -33,12 +33,14 @@ export const AuthProvider = ({ children }) => {
       async (event, session) => {
         setSession(session)
         setUser(session?.user ?? null)
-        if (session?.user) {
+
+        // Only refetch on actual sign-in, not token refresh (which fires on tab focus)
+        if (event === 'SIGNED_IN' && session?.user) {
           await Promise.all([
             fetchRegistration(session.access_token),
             fetchAdminStatus(session.access_token)
           ])
-        } else {
+        } else if (event === 'SIGNED_OUT' || !session?.user) {
           setRegistration(null)
           setIsAdmin(false)
         }
