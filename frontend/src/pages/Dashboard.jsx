@@ -7,8 +7,8 @@ import { FaSignOutAlt, FaArrowLeft, FaCheck, FaEdit, FaDownload, FaExclamationTr
 import './Dashboard.css'
 
 // Consent form URLs
-const MINOR_FORM_URL = 'Photo and Video Release Form (Minors) (1).pdf'
-const ADULT_FORM_URL = 'Photo and Video Release Form Non-minors.pdf'
+const MINOR_FORM_URL = '/Photo and Video Release Form (Minors) (1).pdf'
+const ADULT_FORM_URL = '/Photo and Video Release Form Non-minors.pdf'
 
 const Dashboard = () => {
   const { registration, signOut, session, refreshRegistration } = useAuth()
@@ -131,7 +131,7 @@ const Dashboard = () => {
   }
 
   const consentFormSubmitted = registration?.consent_form_url
-  const formUrl = registration?.is_minor ? MINOR_FORM_URL : ADULT_FORM_URL
+  const formUrl = encodeURI(registration?.is_minor ? MINOR_FORM_URL : ADULT_FORM_URL)
 
   if (!registration) {
     return (
