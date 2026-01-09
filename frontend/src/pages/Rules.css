@@ -43,28 +43,22 @@
 }
 
 .rules-section ul {
-  list-style: none;
-  padding: 0;
+  list-style: disc;
+  padding-left: var(--space-lg);
+  margin: 0;
+}
+
+.rules-section ol {
+  list-style: decimal;
+  padding-left: var(--space-lg);
   margin: 0;
 }
 
 .rules-section li {
   color: #2A3558;
   padding: var(--space-sm) 0;
-  padding-left: var(--space-lg);
-  position: relative;
   line-height: 1.6;
 }
-
-.rules-section li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: #10b981;
-  font-weight: bold;
-  font-size: 1.2em;
-}
-
 .rules-section li strong {
   color: #153166;
 }

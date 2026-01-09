@@ -22,6 +22,49 @@ const Rules = () => {
 
         <div className="rules-section">
           <h2>Code of Conduct</h2>
+          <ol className="rules-list">
+            <li>
+              <strong>Be Respectful:</strong> Treat all participants, mentors, organizers, and volunteers with
+              respect. Harassment, discrimination, or inappropriate behavior of any kind is not tolerated.
+            </li>
+            <li>
+              <strong>Be Inclusive:</strong> We welcome participants of all backgrounds and skill levels.
+              Support others, share knowledge, and help create a friendly, beginner-friendly environment.
+            </li>
+            <li>
+              <strong>Keep it Fair:</strong> All projects must be developed entirely within the official
+              hacking timeframe. Your project must be hosted on a public GitHub repository with an
+              open-source license. Pre-existing code, libraries, or assets are not permitted unless
+              explicitly approved by organizers. We reserve the right to audit any project if commit
+              history, timing, or other factors appear suspicious. Violations of this rule may result in
+              penalties including disqualification and removal from the event.
+            </li>
+            <li>
+              <strong>Keep It Professional:</strong> Use appropriate language and behavior. Do not engage
+              in disruptive, unsafe, or hostile conduct.
+            </li>
+            <li>
+              <strong>Collaborate Fairly:</strong> Contribute honestly. Do not sabotage, steal, or copy
+              others’ work without permission. Follow rules regarding project originality and allowed
+              tools.
+            </li>
+            <li>
+              <strong>Respect Privacy:</strong> Do not share personal information, photos, or project ideas
+              without consent.
+            </li>
+            <li>
+              <strong>Follow Venue & Safety Rules:</strong> Respect the physical space; keep the area clean
+              and safe.
+            </li>
+            <li>
+              <strong>Ask for Help:</strong> If you witness or experience issues, contact an organizer
+              immediately.
+            </li>
+            <li>
+              <strong>Consequences:</strong> Organizers reserve the right to remove participants who
+              violate the Code of Conduct.
+            </li>
+          </ol>
           <p>
             Hack the Bias is dedicated to providing a harassment-free experience for everyone.
           </p>
