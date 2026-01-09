@@ -132,6 +132,9 @@ const Dashboard = () => {
 
   const consentFormSubmitted = registration?.consent_form_url
   const formUrl = encodeURI(registration?.is_minor ? MINOR_FORM_URL : ADULT_FORM_URL)
+  const isIOSSafari = /iP(ad|hone|od)/.test(navigator.userAgent) &&
+    /Safari/.test(navigator.userAgent) &&
+    !/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent)
 
   if (!registration) {
     return (
@@ -194,8 +197,8 @@ const Dashboard = () => {
             <div className="consent-form-actions">
               <a
                 href={formUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={isIOSSafari ? undefined : '_blank'}
+                rel={isIOSSafari ? undefined : 'noopener noreferrer'}
                 className="download-form-btn"
               >
                 <FaDownload /> Download {registration.is_minor ? 'Minor Consent Form' : 'Photo Release Form'}
