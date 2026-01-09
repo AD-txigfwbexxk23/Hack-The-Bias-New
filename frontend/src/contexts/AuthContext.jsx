@@ -14,12 +14,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
       if (session?.user) {
-        fetchRegistration(session.access_token)
-        fetchAdminStatus(session.access_token)
+        await Promise.all([
+          fetchRegistration(session.access_token),
+          fetchAdminStatus(session.access_token)
+        ])
       } else {
         setIsAdmin(false)
       }
@@ -32,8 +34,10 @@ export const AuthProvider = ({ children }) => {
         setSession(session)
         setUser(session?.user ?? null)
         if (session?.user) {
-          fetchRegistration(session.access_token)
-          fetchAdminStatus(session.access_token)
+          await Promise.all([
+            fetchRegistration(session.access_token),
+            fetchAdminStatus(session.access_token)
+          ])
         } else {
           setRegistration(null)
           setIsAdmin(false)
