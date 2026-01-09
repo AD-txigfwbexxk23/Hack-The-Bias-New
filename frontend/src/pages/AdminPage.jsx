@@ -186,6 +186,16 @@ const AdminPage = () => {
     })
   ), [normalizedRegistrations, fridayFilter, saturdayFilter, registrationSearch])
 
+  const advancedFilteredRegistrations = useMemo(() => {
+    const searchValue = registrationSearch.trim().toLowerCase()
+    if (!searchValue) return registrations
+    return registrations.filter((record) => (
+      [record.full_name, record.name, record.email, record.user_email, record.hacker_code]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(searchValue))
+    ))
+  }, [registrations, registrationSearch])
+
   const sortedRegistrations = useMemo(() => {
     const sorted = [...filteredRegistrations]
     const { key, direction } = sortConfig
@@ -419,14 +429,14 @@ const AdminPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {registrations.length === 0 ? (
+                {advancedFilteredRegistrations.length === 0 ? (
                   <tr>
                     <td colSpan={advancedColumns.length} className="admin-empty-row">
                       No registrations found.
                     </td>
                   </tr>
                 ) : (
-                  registrations.map((record) => {
+                  advancedFilteredRegistrations.map((record) => {
                     const rowId = record.id || record.user_id
                     return (
                       <tr
